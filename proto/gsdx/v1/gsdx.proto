@@ -1,0 +1,147 @@
+// Copyright 2025 carp-sushi
+syntax = "proto3";
+
+package gsdx.v1;
+
+// The service definition
+service GsdxService {
+  // Get a page of stories
+  rpc ListStories(ListStoriesRequest) returns (ListStoriesResponse);
+  // Create a new story
+  rpc CreateStory(CreateStoryRequest) returns (CreateStoryResponse);
+  // Delete a story and all its tasks
+  rpc DeleteStory(DeleteStoryRequest) returns (DeleteStoryResponse);
+  // Update an existing story
+  rpc UpdateStory(UpdateStoryRequest) returns (UpdateStoryResponse);
+
+  // List all tasks for a story
+  rpc ListTasks(ListTasksRequest) returns (ListTasksResponse);
+  // Create a new task
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+  // Delete a task
+  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse);
+  // Update a task
+  rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse);
+}
+
+// The story gRPC response type
+message StoryData {
+  // The story id
+  string story_id = 1;
+  // The story name
+  string name = 2;
+}
+
+// Request for creating a new story.
+message CreateStoryRequest {
+  // The name of the story.
+  string name = 1;
+}
+
+// Response from creating a new story.
+message CreateStoryResponse {
+  // The newly created story
+  StoryData story = 1;
+}
+
+// Request to get a page of stories.
+message ListStoriesRequest {
+  // The page cursor index.
+  int64 cursor = 1;
+  // The number of stories to fetch.
+  int64 limit = 2;
+}
+
+// Response from querying a page of stories.
+message ListStoriesResponse {
+  // The next page cursor index.
+  int64 next_cursor = 1;
+  // The list of stories
+  repeated StoryData stories = 2;
+}
+
+// Request for deleting a story.
+message DeleteStoryRequest {
+  // The story id
+  string story_id = 1;
+}
+
+// Response from deleting a story.
+message DeleteStoryResponse {}
+
+// Request for updating a story.
+message UpdateStoryRequest {
+  // The story id
+  string story_id = 1;
+  // The updated name of the story.
+  string name = 2;
+}
+
+// Response from updating a story.
+message UpdateStoryResponse {
+  // The updated story
+  StoryData story = 1;
+}
+
+// The task gRPC data type
+message TaskData {
+  // The task id
+  string task_id = 1;
+  // The story id of this task
+  string story_id = 2;
+  // The task name
+  string name = 3;
+  // The task status
+  string status = 4;
+}
+
+// Request for creating a new task.
+message CreateTaskRequest {
+  // The story id of this task
+  string story_id = 1;
+  // The name of the task
+  string name = 2;
+  // The task status
+  string status = 3;
+}
+
+// Response from creating a new task.
+message CreateTaskResponse {
+  // The newly created task
+  TaskData task = 1;
+}
+
+// Request for listing all tasks for a story.
+message ListTasksRequest {
+  // The story id
+  string story_id = 1;
+}
+
+// Response from listing all tasks for a story.
+message ListTasksResponse {
+  // The list of tasks
+  repeated TaskData tasks = 1;
+}
+
+// Request for deleting a task.
+message DeleteTaskRequest {
+  // The task id
+  string task_id = 1;
+}
+
+// Response from deleting a task.
+message DeleteTaskResponse {}
+
+// Request for updating a task.
+message UpdateTaskRequest {
+  // The task id
+  string task_id = 1;
+  // The updated status of the task.
+  string status = 2;
+}
+
+// Response from updating a task.
+message UpdateTaskResponse {
+  // The updated task
+  TaskData task = 1;
+}
