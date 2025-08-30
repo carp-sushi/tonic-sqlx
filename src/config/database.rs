@@ -1,8 +1,6 @@
 use crate::config::Config;
-use sqlx::Executor;
-use sqlx::postgres::PgPoolOptions;
-use std::sync::Arc;
-use std::time::Duration;
+use sqlx::{Executor, postgres::PgPoolOptions};
+use std::{sync::Arc, time::Duration};
 
 impl Config {
     pub fn db_pool_opts(&self) -> PgPoolOptions {

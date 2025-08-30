@@ -10,10 +10,8 @@ use gsdx::{
 
 use dotenvy::dotenv;
 use sqlx::migrate::Migrator;
-use std::error::Error;
-use std::sync::Arc;
-use tonic::codec::CompressionEncoding::Gzip;
-use tonic::transport::Server;
+use std::{error::Error, sync::Arc};
+use tonic::{codec::CompressionEncoding::Gzip, transport::Server};
 
 // Embed migrations into the gRPC server binary.
 pub static MIGRATOR: Migrator = sqlx::migrate!();
