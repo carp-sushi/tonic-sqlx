@@ -18,13 +18,12 @@ impl Validate {
     pub fn string_length(value: &str, param_name: &str) -> Result<String> {
         let value = value.trim().to_string();
         if value.is_empty() {
-            return Err(Error::invalid_args(&format!(
-                "{} cannot be empty",
-                param_name
-            )));
+            let errs = format!("{} cannot be empty", param_name);
+            return Err(Error::invalid_args(errs));
         }
         if value.len() > Validate::MAX_STR_LEN {
-            return Err(Error::invalid_args(&format!("{} is too long", param_name)));
+            let errs = format!("{} is too long", param_name);
+            return Err(Error::invalid_args(errs));
         }
         Ok(value)
     }
@@ -32,7 +31,7 @@ impl Validate {
     /// Ensure a uuid value can be created from a string
     pub fn uuid(value: &str) -> Result<Uuid> {
         let value = value.trim().to_lowercase();
-        let uuid = Uuid::parse_str(&value)?;
+        let uuid = Uuid::parse_str(&value).map_err(|err| Error::invalid_args(err.to_string()))?;
         Ok(uuid)
     }
 
@@ -47,7 +46,7 @@ impl Validate {
     pub fn status(value: &str) -> Result<Status> {
         let value = value.trim().to_lowercase();
         let status =
-            Status::from_str(&value).map_err(|err| Error::invalid_args(&err.to_string()))?;
+            Status::from_str(&value).map_err(|err| Error::invalid_args(err.to_string()))?;
         Ok(status)
     }
 }

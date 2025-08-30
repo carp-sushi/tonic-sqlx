@@ -11,15 +11,19 @@ pub enum Error {
 
 // Error helpers
 impl Error {
-    pub fn internal(message: String) -> Self {
-        Error::Internal { message }
+    pub fn internal<T: Into<String>>(message: T) -> Self {
+        Error::Internal {
+            message: message.into(),
+        }
     }
 
-    pub fn not_found(message: String) -> Self {
-        Error::NotFound { message }
+    pub fn not_found<T: Into<String>>(message: T) -> Self {
+        Error::NotFound {
+            message: message.into(),
+        }
     }
 
-    pub fn invalid_args(message: &str) -> Self {
+    pub fn invalid_args<T: Into<String>>(message: T) -> Self {
         Error::InvalidArgs {
             messages: vec![message.into()],
         }
@@ -28,12 +32,6 @@ impl Error {
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Error::internal(err.to_string())
-    }
-}
-
-impl From<uuid::Error> for Error {
-    fn from(err: uuid::Error) -> Self {
         Error::internal(err.to_string())
     }
 }
