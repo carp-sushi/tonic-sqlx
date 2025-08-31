@@ -70,7 +70,7 @@ impl GsdxService for Service {
     ) -> Result<Response<CreateStoryResponse>, Status> {
         log::debug!("Create story");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let name = Validate::string_length(&request.name, "name")?;
 
         let story = self.repo.create_story(name).await?;
@@ -87,7 +87,7 @@ impl GsdxService for Service {
     ) -> Result<Response<DeleteStoryResponse>, Status> {
         log::debug!("Delete story");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let story_id = Validate::uuid(&request.story_id)?;
 
         self.repo
@@ -105,7 +105,7 @@ impl GsdxService for Service {
     ) -> Result<Response<ListStoriesResponse>, Status> {
         log::debug!("List stories");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let (cursor, limit) = Validate::page_bounds(request.cursor, request.limit);
 
         let (next_cursor, stories) = self.repo.list_stories(cursor, limit).await?;
@@ -124,7 +124,7 @@ impl GsdxService for Service {
     ) -> Result<Response<UpdateStoryResponse>, Status> {
         log::debug!("Update story");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let story_id = Validate::uuid(&request.story_id)?;
         let name = Validate::string_length(&request.name, "name")?;
 
@@ -146,7 +146,7 @@ impl GsdxService for Service {
     ) -> Result<Response<ListTasksResponse>, Status> {
         log::debug!("List tasks");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let story_id = Validate::uuid(&request.story_id)?;
         self.repo.fetch_story(story_id).await?;
 
@@ -168,7 +168,7 @@ impl GsdxService for Service {
     ) -> Result<Response<CreateTaskResponse>, Status> {
         log::debug!("Create task");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let story_id = Validate::uuid(&request.story_id)?;
         let name = Validate::string_length(&request.name, "name")?;
         let status = Validate::status(&request.status)?;
@@ -187,7 +187,7 @@ impl GsdxService for Service {
     ) -> Result<Response<DeleteTaskResponse>, Status> {
         log::debug!("Delete task");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let task_id = Validate::uuid(&request.task_id)?;
 
         self.repo
@@ -205,7 +205,7 @@ impl GsdxService for Service {
     ) -> Result<Response<UpdateTaskResponse>, Status> {
         log::debug!("Update task");
 
-        let request = request.into_inner();
+        let request = request.get_ref();
         let task_id = Validate::uuid(&request.task_id)?;
         let status = Validate::status(&request.status)?;
 
