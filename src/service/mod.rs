@@ -72,7 +72,6 @@ impl GsdxService for Service {
 
         let request = request.get_ref();
         let name = Validate::string_length(&request.name, "name")?;
-
         let story = self.repo.create_story(name).await?;
 
         Ok(Response::new(CreateStoryResponse {
@@ -89,7 +88,6 @@ impl GsdxService for Service {
 
         let request = request.get_ref();
         let story_id = Validate::uuid(&request.story_id)?;
-
         self.repo
             .fetch_story(story_id)
             .and_then(|_| self.repo.delete_story(story_id))
@@ -107,7 +105,6 @@ impl GsdxService for Service {
 
         let request = request.get_ref();
         let (cursor, limit) = Validate::page_bounds(request.cursor, request.limit);
-
         let (next_cursor, stories) = self.repo.list_stories(cursor, limit).await?;
         let stories = stories.into_iter().map(|s| s.into()).collect();
 
@@ -127,7 +124,6 @@ impl GsdxService for Service {
         let request = request.get_ref();
         let story_id = Validate::uuid(&request.story_id)?;
         let name = Validate::string_length(&request.name, "name")?;
-
         let story = self
             .repo
             .fetch_story(story_id)
@@ -149,8 +145,7 @@ impl GsdxService for Service {
         let request = request.get_ref();
         let story_id = Validate::uuid(&request.story_id)?;
         self.repo.fetch_story(story_id).await?;
-
-        let tasks: Vec<TaskData> = self
+        let tasks = self
             .repo
             .list_tasks(story_id)
             .await?
@@ -172,7 +167,6 @@ impl GsdxService for Service {
         let story_id = Validate::uuid(&request.story_id)?;
         let name = Validate::string_length(&request.name, "name")?;
         let status = Validate::status(&request.status)?;
-
         let task = self.repo.create_task(story_id, name, status).await?;
 
         Ok(Response::new(CreateTaskResponse {
@@ -189,7 +183,6 @@ impl GsdxService for Service {
 
         let request = request.get_ref();
         let task_id = Validate::uuid(&request.task_id)?;
-
         self.repo
             .fetch_task(task_id)
             .and_then(|_| self.repo.delete_task(task_id))
@@ -208,7 +201,6 @@ impl GsdxService for Service {
         let request = request.get_ref();
         let task_id = Validate::uuid(&request.task_id)?;
         let status = Validate::status(&request.status)?;
-
         let task = self
             .repo
             .fetch_task(task_id)
