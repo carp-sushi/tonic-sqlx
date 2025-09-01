@@ -69,11 +69,15 @@ impl GsdxService for Service {
         request: Request<CreateStoryRequest>,
     ) -> Result<Response<CreateStoryResponse>, Status> {
         log::debug!("Create story");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let name = Validate::string_length(&request.name, "name")?;
+
+        // Action
         let story = self.repo.create_story(name).await?;
 
+        // Respond
         Ok(Response::new(CreateStoryResponse {
             story: Some(story.into()),
         }))
@@ -85,14 +89,18 @@ impl GsdxService for Service {
         request: Request<DeleteStoryRequest>,
     ) -> Result<Response<DeleteStoryResponse>, Status> {
         log::debug!("Delete story");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let story_id = Validate::uuid(&request.story_id)?;
+
+        // Action
         self.repo
             .fetch_story(story_id)
             .and_then(|_| self.repo.delete_story(story_id))
             .await?;
 
+        // Respond
         Ok(Response::new(DeleteStoryResponse {}))
     }
 
@@ -102,12 +110,16 @@ impl GsdxService for Service {
         request: Request<ListStoriesRequest>,
     ) -> Result<Response<ListStoriesResponse>, Status> {
         log::debug!("List stories");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let (cursor, limit) = Validate::page_bounds(request.cursor, request.limit);
-        let (next_cursor, stories) = self.repo.list_stories(cursor, limit).await?;
-        let stories = stories.into_iter().map(|s| s.into()).collect();
 
+        // Action
+        let (next_cursor, stories) = self.repo.list_stories(cursor, limit).await?;
+
+        // Respond
+        let stories = stories.into_iter().map(|s| s.into()).collect();
         Ok(Response::new(ListStoriesResponse {
             next_cursor,
             stories,
@@ -120,16 +132,20 @@ impl GsdxService for Service {
         request: Request<UpdateStoryRequest>,
     ) -> Result<Response<UpdateStoryResponse>, Status> {
         log::debug!("Update story");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let story_id = Validate::uuid(&request.story_id)?;
         let name = Validate::string_length(&request.name, "name")?;
+
+        // Action
         let story = self
             .repo
             .fetch_story(story_id)
             .and_then(|_| self.repo.update_story(story_id, name))
             .await?;
 
+        // Respond
         Ok(Response::new(UpdateStoryResponse {
             story: Some(story.into()),
         }))
@@ -141,10 +157,13 @@ impl GsdxService for Service {
         request: Request<ListTasksRequest>,
     ) -> Result<Response<ListTasksResponse>, Status> {
         log::debug!("List tasks");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let story_id = Validate::uuid(&request.story_id)?;
         self.repo.fetch_story(story_id).await?;
+
+        // Action
         let tasks = self
             .repo
             .list_tasks(story_id)
@@ -153,6 +172,7 @@ impl GsdxService for Service {
             .map(|t| t.into())
             .collect();
 
+        // Respond
         Ok(Response::new(ListTasksResponse { tasks }))
     }
 
@@ -162,13 +182,17 @@ impl GsdxService for Service {
         request: Request<CreateTaskRequest>,
     ) -> Result<Response<CreateTaskResponse>, Status> {
         log::debug!("Create task");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let story_id = Validate::uuid(&request.story_id)?;
         let name = Validate::string_length(&request.name, "name")?;
         let status = Validate::status(&request.status)?;
+
+        // Action
         let task = self.repo.create_task(story_id, name, status).await?;
 
+        // Respond
         Ok(Response::new(CreateTaskResponse {
             task: Some(task.into()),
         }))
@@ -180,14 +204,18 @@ impl GsdxService for Service {
         request: Request<DeleteTaskRequest>,
     ) -> Result<Response<DeleteTaskResponse>, Status> {
         log::debug!("Delete task");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let task_id = Validate::uuid(&request.task_id)?;
+
+        // Action
         self.repo
             .fetch_task(task_id)
             .and_then(|_| self.repo.delete_task(task_id))
             .await?;
 
+        // Respond
         Ok(Response::new(DeleteTaskResponse {}))
     }
 
@@ -197,16 +225,20 @@ impl GsdxService for Service {
         request: Request<UpdateTaskRequest>,
     ) -> Result<Response<UpdateTaskResponse>, Status> {
         log::debug!("Update task");
+        let request = request.get_ref(); // Upack request
 
-        let request = request.get_ref();
+        // Validate
         let task_id = Validate::uuid(&request.task_id)?;
         let status = Validate::status(&request.status)?;
+
+        // Action
         let task = self
             .repo
             .fetch_task(task_id)
             .and_then(|t| self.repo.update_task(task_id, t.name, status))
             .await?;
 
+        // Respond
         Ok(Response::new(UpdateTaskResponse {
             task: Some(task.into()),
         }))
