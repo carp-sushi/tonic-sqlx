@@ -9,8 +9,8 @@ pub struct Validate {}
 // Constants for validation.
 impl Validate {
     const MAX_STR_LEN: usize = 1000;
-    const MIN_LIMIT: i64 = 10;
-    const MAX_LIMIT: i64 = 100;
+    const MIN_PAGE_LIMIT: i64 = 10;
+    const MAX_PAGE_LIMIT: i64 = 100;
 }
 
 impl Validate {
@@ -38,7 +38,7 @@ impl Validate {
     /// Ensure a paging params are within reasonable bounds.
     pub fn page_bounds(cursor: i64, limit: i64) -> (i64, i64) {
         let cursor = cursor.clamp(1, i64::MAX);
-        let limit = limit.clamp(Validate::MIN_LIMIT, Validate::MAX_LIMIT);
+        let limit = limit.clamp(Validate::MIN_PAGE_LIMIT, Validate::MAX_PAGE_LIMIT);
         (cursor, limit)
     }
 
