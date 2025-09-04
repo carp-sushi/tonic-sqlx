@@ -47,7 +47,7 @@ impl Repo {
     pub async fn update_story(&self, story_id: Uuid, name: String) -> Result<Story> {
         let query = sqlx::query_as!(
             Story,
-            r#"UPDATE stories SET name = $1, updated_at = now() WHERE id = $2
+            r#"UPDATE stories SET name = $1 WHERE id = $2
             RETURNING id, name, seqno, created_at, updated_at"#,
             name,
             story_id

@@ -55,7 +55,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .add_service(health_service)
         .add_service(reflection_service)
         .add_service(gsdx_service)
-        .serve(config.grpc_listen_addr.parse()?)
+        .serve(config.grpc_listen_addr)
         .await?;
 
     Ok(())

@@ -5,7 +5,7 @@ create table tasks (
     status text not null default 'incomplete'
 );
 
-create index tasks_story_id_index ON tasks using btree(story_id);
+create index tasks_story_id_index on tasks using btree(story_id);
 
 select add_timestamp_columns('tasks');
 

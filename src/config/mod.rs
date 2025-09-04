@@ -1,11 +1,11 @@
-use std::env;
+use std::{env, net::SocketAddr};
 
 mod database;
 
 /// Configuration settings
 #[derive(Clone, Debug)]
 pub struct Config {
-    pub grpc_listen_addr: String,
+    pub grpc_listen_addr: SocketAddr,
     pub db_max_connections: u32,
     pub db_url: String,
     pub db_schema: String,
@@ -23,7 +23,9 @@ impl Config {
     pub fn load() -> Self {
         // http server settings
         let port = env::var("GRPC_SERVER_PORT").unwrap_or("9090".into());
-        let grpc_listen_addr = format!("0.0.0.0:{port}");
+        let grpc_listen_addr = format!("0.0.0.0:{port}")
+            .parse()
+            .expect("grpc_listen_addr could not be parsed");
 
         // database settings
         let mut db_max_connections = num_cpus::get() as u32;

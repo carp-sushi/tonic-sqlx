@@ -38,3 +38,11 @@ run:
 .PHONY: release
 release:
 	@cargo build --release
+
+.PHONY: run-ui
+run-ui:
+	@grpcui --plaintext "[::]:9090"
+
+.PHONY: migrate
+migrate:
+	@sqlx migrate run
