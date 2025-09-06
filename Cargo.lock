@@ -878,6 +878,7 @@ dependencies = [
  "mimalloc",
  "num_cpus",
  "prost 0.14.1",
+ "prost-types 0.14.1",
  "sqlx",
  "strum",
  "strum_macros",

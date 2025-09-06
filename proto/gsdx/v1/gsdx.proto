@@ -3,6 +3,8 @@ syntax = "proto3";
 
 package gsdx.v1;
 
+import "google/protobuf/timestamp.proto";
+
 // The service definition
 service GsdxService {
   // Get a page of stories
@@ -30,6 +32,33 @@ message StoryData {
   string story_id = 1;
   // The story name
   string name = 2;
+  // The story created at
+  google.protobuf.Timestamp created_at = 3;
+  // The story updated at
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// Task status enum
+enum TaskStatus {
+  TASK_STATUS_UNSPECIFIED = 0;
+  TASK_STATUS_INCOMPLETE = 1;
+  TASK_STATUS_COMPLETE = 2;
+}
+
+// The task gRPC data type
+message TaskData {
+  // The task id
+  string task_id = 1;
+  // The parent story of this task
+  string story_id = 2;
+  // The task name
+  string name = 3;
+  // The task status
+  TaskStatus status = 4;
+  // The story created at
+  google.protobuf.Timestamp created_at = 5;
+  // The story updated at
+  google.protobuf.Timestamp updated_at = 6;
 }
 
 // Request for creating a new story.
@@ -83,18 +112,6 @@ message UpdateStoryResponse {
   StoryData story = 1;
 }
 
-// The task gRPC data type
-message TaskData {
-  // The task id
-  string task_id = 1;
-  // The story id of this task
-  string story_id = 2;
-  // The task name
-  string name = 3;
-  // The task status
-  string status = 4;
-}
-
 // Request for creating a new task.
 message CreateTaskRequest {
   // The story id of this task
@@ -102,7 +119,7 @@ message CreateTaskRequest {
   // The name of the task
   string name = 2;
   // The task status
-  string status = 3;
+  TaskStatus status = 3;
 }
 
 // Response from creating a new task.
@@ -137,7 +154,7 @@ message UpdateTaskRequest {
   // The task id
   string task_id = 1;
   // The updated status of the task.
-  string status = 2;
+  TaskStatus status = 2;
 }
 
 // Response from updating a task.

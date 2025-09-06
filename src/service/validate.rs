@@ -1,9 +1,7 @@
-use crate::domain::Status;
 use crate::{Error, Result};
-use std::str::FromStr;
 use uuid::Uuid;
 
-/// Validation helpers
+/// Validation helpers for gRPC requests.
 pub struct Validate {}
 
 // Constants for validation.
@@ -40,14 +38,6 @@ impl Validate {
         let cursor = cursor.clamp(1, i64::MAX);
         let limit = limit.clamp(Validate::MIN_PAGE_LIMIT, Validate::MAX_PAGE_LIMIT);
         (cursor, limit)
-    }
-
-    /// Ensure a status is valid.
-    pub fn status(value: &str) -> Result<Status> {
-        let value = value.trim().to_lowercase();
-        let status =
-            Status::from_str(&value).map_err(|err| Error::invalid_args(err.to_string()))?;
-        Ok(status)
     }
 }
 

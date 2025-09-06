@@ -3,6 +3,6 @@
 grpcurl -plaintext \
   -import-path ./proto \
   -proto ./proto/gsdx/v1/gsdx.proto \
-  -d '{"story_id": "42add4c3-fcde-4e4c-a53f-410d3a903356"}' \
+  -d '{"story_id": "768d2dfb-6cbc-4d77-8deb-6e3049986d8f"}' \
   "[::]:9090" \
   gsdx.v1.GsdxService/ListTasks | jq -r

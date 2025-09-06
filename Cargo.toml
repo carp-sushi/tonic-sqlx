@@ -12,6 +12,7 @@ log = "0.4"
 mimalloc = { version = "0.1", default-features = false }
 num_cpus = "1.17"
 prost = "0.14"
+prost-types = "0.14"
 sqlx = { version = "0.8", features = [
     "runtime-tokio-rustls",
     "postgres",
