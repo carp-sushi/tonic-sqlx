@@ -3,9 +3,10 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 use gsdx::{
     config::Config,
+    health::health_check,
     proto::{GSDX_V1_FILE_DESCRIPTOR_SET, gsdx_service_server::GsdxServiceServer},
     repo::Repo,
-    service::{Service, health::health_check},
+    service::Service,
 };
 
 use dotenvy::dotenv;

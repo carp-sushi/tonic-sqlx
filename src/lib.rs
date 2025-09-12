@@ -1,3 +1,12 @@
+#![forbid(unsafe_code)]
+#![deny(
+    clippy::exit,
+    clippy::print_stderr,
+    clippy::print_stdout,
+    clippy::unwrap_used,
+    clippy::wildcard_imports
+)]
+
 /// Protobuf definitions.
 pub mod proto {
     tonic::include_proto!("gsdx.v1");
@@ -14,11 +23,17 @@ pub mod domain;
 /// Project errors.
 pub mod error;
 
+/// Health check.
+pub mod health;
+
 /// A light-weight abstraction over the database.
 pub mod repo;
 
 /// gRPC service layer.
 pub mod service;
+
+/// Utility functions.
+pub mod util;
 
 /// Export error type
 pub use error::Error;

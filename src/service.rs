@@ -1,13 +1,20 @@
 use crate::{
     Error,
-    domain::{Status, Story, Task},
+    domain::{Status, Story, StoryId, Task},
     proto::gsdx_service_server::GsdxService,
-    proto::*,
+    proto::{
+        CreateStoryRequest, CreateStoryResponse, CreateTaskRequest, CreateTaskResponse,
+        DeleteStoryRequest, DeleteStoryResponse, DeleteTaskRequest, DeleteTaskResponse,
+        ListStoriesRequest, ListStoriesResponse, ListTasksRequest, ListTasksResponse, StoryData,
+        TaskData, TaskStatus, UpdateStoryRequest, UpdateStoryResponse, UpdateTaskRequest,
+        UpdateTaskResponse,
+    },
     repo::Repo,
+    util::{
+        clamp_page_bounds, mk_prost_ts, validate_story_id, validate_string_length, validate_task_id,
+    },
 };
 
-use super::util::mk_prost_timestamp;
-use super::validate::Validate;
 use futures_util::TryFutureExt;
 use tonic::{Request, Response, Status as GrpcStatus};
 
@@ -40,11 +47,12 @@ impl From<Error> for GrpcStatus {
 /// Map domain story to gRPC response type
 impl From<Story> for StoryData {
     fn from(story: Story) -> Self {
+        let StoryId(story_id) = story.id;
         Self {
-            story_id: story.id.to_string(),
+            story_id: story_id.to_string(),
             name: story.name,
-            created_at: Some(mk_prost_timestamp(story.created_at)),
-            updated_at: Some(mk_prost_timestamp(story.updated_at)),
+            created_at: mk_prost_ts(story.created_at),
+            updated_at: mk_prost_ts(story.updated_at),
         }
     }
 }
@@ -74,14 +82,14 @@ impl From<TaskStatus> for Status {
 /// Map domain task to gRPC response type
 impl From<Task> for TaskData {
     fn from(task: Task) -> Self {
-        let status = TaskStatus::from(task.status()) as i32;
+        let status = TaskStatus::from(task.status) as i32;
         Self {
             task_id: task.id.to_string(),
             story_id: task.story_id.to_string(),
             name: task.name,
             status,
-            created_at: Some(mk_prost_timestamp(task.created_at)),
-            updated_at: Some(mk_prost_timestamp(task.updated_at)),
+            created_at: mk_prost_ts(task.created_at),
+            updated_at: mk_prost_ts(task.updated_at),
         }
     }
 }
@@ -97,7 +105,7 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let name = Validate::string_length(&request.name, "name")?;
+        let name = validate_string_length(&request.name, "name")?;
 
         // Action
         let story = self.repo.create_story(name).await?;
@@ -117,12 +125,12 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let story_id = Validate::uuid(&request.story_id)?;
+        let story_id = validate_story_id(&request.story_id)?;
 
         // Action
         self.repo
             .fetch_story(story_id)
-            .and_then(|_| self.repo.delete_story(story_id))
+            .and_then(|s| self.repo.delete_story(s.id))
             .await?;
 
         // Respond
@@ -138,7 +146,8 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let (cursor, limit) = Validate::page_bounds(request.cursor, request.limit);
+        let (cursor, limit) = clamp_page_bounds(request.cursor, request.limit);
+        log::debug!("Page params: cursor: {}, limit: {}", cursor, limit);
 
         // Action
         let (next_cursor, stories) = self.repo.list_stories(cursor, limit).await?;
@@ -160,14 +169,14 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let story_id = Validate::uuid(&request.story_id)?;
-        let name = Validate::string_length(&request.name, "name")?;
+        let story_id = validate_story_id(&request.story_id)?;
+        let name = validate_string_length(&request.name, "name")?;
 
         // Action
         let story = self
             .repo
             .fetch_story(story_id)
-            .and_then(|_| self.repo.update_story(story_id, name))
+            .and_then(|s| self.repo.update_story(s.id, name))
             .await?;
 
         // Respond
@@ -185,8 +194,8 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let story_id = Validate::uuid(&request.story_id)?;
-        self.repo.fetch_story(story_id).await?;
+        let story_id = validate_story_id(&request.story_id)?;
+        self.repo.fetch_story(story_id.clone()).await?;
 
         // Action
         let tasks = self
@@ -210,8 +219,8 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let story_id = Validate::uuid(&request.story_id)?;
-        let name = Validate::string_length(&request.name, "name")?;
+        let story_id = validate_story_id(&request.story_id)?;
+        let name = validate_string_length(&request.name, "name")?;
         let proto_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
         let status = Status::from(proto_status);
 
@@ -233,12 +242,12 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let task_id = Validate::uuid(&request.task_id)?;
+        let task_id = validate_task_id(&request.task_id)?;
 
         // Action
         self.repo
             .fetch_task(task_id)
-            .and_then(|_| self.repo.delete_task(task_id))
+            .and_then(|t| self.repo.delete_task(t.id))
             .await?;
 
         // Respond
@@ -254,7 +263,7 @@ impl GsdxService for Service {
         let request = request.get_ref(); // Upack request
 
         // Validate
-        let task_id = Validate::uuid(&request.task_id)?;
+        let task_id = validate_task_id(&request.task_id)?;
         let proto_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
         let status = Status::from(proto_status);
 
@@ -262,7 +271,7 @@ impl GsdxService for Service {
         let task = self
             .repo
             .fetch_task(task_id)
-            .and_then(|t| self.repo.update_task(task_id, t.name, status))
+            .and_then(|t| self.repo.update_task(t.id, t.name, status))
             .await?;
 
         // Respond

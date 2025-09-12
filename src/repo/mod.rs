@@ -26,7 +26,6 @@ impl From<sqlx::Error> for Error {
     fn from(err: sqlx::Error) -> Self {
         let errs = err.to_string();
         match err {
-            sqlx::Error::ColumnNotFound(_) => Error::not_found(errs),
             sqlx::Error::InvalidArgument(errs) => Error::invalid_args(errs),
             sqlx::Error::RowNotFound => Error::not_found(errs),
             _ => Error::internal(errs),
