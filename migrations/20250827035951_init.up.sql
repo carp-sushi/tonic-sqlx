@@ -1,4 +1,9 @@
 --
+-- For UUID generation.
+--
+create extension if not exists pgcrypto;
+
+--
 -- Migration helper functions for creating timestamp columns
 --
 

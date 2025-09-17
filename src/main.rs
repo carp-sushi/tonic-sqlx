@@ -1,21 +1,30 @@
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-use gsdx::{
-    config::Config,
-    health::health_check,
-    proto::{GSDX_V1_FILE_DESCRIPTOR_SET, gsdx_service_server::GsdxServiceServer},
-    repo::Repo,
-    service::Service,
-};
+use gsdx::config::Config;
 
+use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use sqlx::migrate::Migrator;
 use std::{error::Error, sync::Arc};
-use tonic::{codec::CompressionEncoding::Gzip, transport::Server};
 
-// Embed migrations into the gRPC server binary.
+// Embed migrations into the GSDX binary.
 pub static MIGRATOR: Migrator = sqlx::migrate!();
+
+/// GSDX command line interface parser.
+#[derive(Parser)]
+#[command(version)]
+struct Cli {
+    #[command(subcommand)]
+    cmd: Cmd,
+}
+
+/// GSDX command line interface subcommands for running the server or migrations.
+#[derive(Subcommand, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+enum Cmd {
+    Migrate,
+    Server,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -23,41 +32,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
     env_logger::init();
 
+    // Parse command line arguments
+    let cli = Cli::parse();
+
     // Load config
     let config = Config::load();
     log::debug!("Loaded config = {:?}", config);
 
-    // Load connection pool and run schema migrations
+    // Load connection pool
     let pool = config.db_pool_opts().connect(&config.db_url).await?;
-    log::info!("Running migrations");
-    MIGRATOR.run(&pool).await?;
 
-    // Arc up connection pool for async sharing across tasks
-    let pool = Arc::new(pool);
-
-    // Start health check
-    let (reporter, health_service) = tonic_health::server::health_reporter();
-    tokio::spawn(health_check(reporter, Arc::clone(&pool)));
-
-    // Set up gRPC reflection
-    let reflection_service = tonic_reflection::server::Builder::configure()
-        .register_encoded_file_descriptor_set(GSDX_V1_FILE_DESCRIPTOR_SET)
-        .build_v1()?;
-
-    // Setup the GSDX service with gzip compression.
-    let repo = Repo::new(Arc::clone(&pool));
-    let gsdx_service = GsdxServiceServer::new(Service::new(repo))
-        .send_compressed(Gzip)
-        .accept_compressed(Gzip);
-
-    // Serve gRPC services
-    log::info!("Server listening on {}", config.grpc_listen_addr);
-    Server::builder()
-        .add_service(health_service)
-        .add_service(reflection_service)
-        .add_service(gsdx_service)
-        .serve(config.grpc_listen_addr)
-        .await?;
+    // Run schema migrations or start server based on the command line arguments provided.
+    match cli.cmd {
+        Cmd::Migrate => {
+            log::info!("Running migrations");
+            MIGRATOR.run(&pool).await?;
+        }
+        Cmd::Server => {
+            gsdx::server::serve(Arc::new(pool), config.grpc_listen_addr).await?;
+        }
+    }
 
     Ok(())
 }

@@ -29,6 +29,9 @@ pub mod health;
 /// A light-weight abstraction over the database.
 pub mod repo;
 
+/// The GSDX gRPC server functionality.
+pub mod server;
+
 /// gRPC service layer.
 pub mod service;
 

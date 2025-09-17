@@ -33,7 +33,7 @@ clean:
 
 .PHONY: run
 run:
-	@cargo run
+	@cargo run -- server
 
 .PHONY: release
 release:
