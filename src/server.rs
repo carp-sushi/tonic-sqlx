@@ -6,8 +6,7 @@ use crate::{
 };
 
 use sqlx::postgres::PgPool;
-use std::net::SocketAddr;
-use std::sync::Arc;
+use std::{net::SocketAddr, sync::Arc};
 use tonic::{codec::CompressionEncoding::Gzip, transport::Server};
 
 /// Start the gRPC server.

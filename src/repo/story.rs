@@ -18,12 +18,12 @@ struct StoryEntity {
 
 // The repo should map the entity to the domain object in public functions.
 impl From<StoryEntity> for Story {
-    fn from(se: StoryEntity) -> Self {
+    fn from(entity: StoryEntity) -> Self {
         Self {
-            id: StoryId(se.id),
-            name: se.name,
-            created_at: se.created_at,
-            updated_at: se.updated_at,
+            id: StoryId(entity.id),
+            name: entity.name,
+            created_at: entity.created_at,
+            updated_at: entity.updated_at,
         }
     }
 }
@@ -31,14 +31,14 @@ impl From<StoryEntity> for Story {
 // Extend repo with queries related to stories.
 impl Repo {
     /// Select a story by id
-    pub async fn fetch_story(&self, StoryId(story_id): StoryId) -> Result<Story> {
+    pub async fn fetch_story(&self, &StoryId(story_id): &StoryId) -> Result<Story> {
         let query = sqlx::query_as!(
             StoryEntity,
             "SELECT id, name, seqno, created_at, updated_at FROM stories WHERE id = $1",
             story_id
         );
         match query.fetch_optional(self.db_ref()).await? {
-            Some(story) => Ok(Story::from(story)),
+            Some(entity) => Ok(Story::from(entity)),
             None => Err(Error::not_found(format!("story not found: {story_id}"))),
         }
     }
@@ -52,39 +52,43 @@ impl Repo {
             cursor,
             limit,
         );
-        let stories = query.fetch_all(self.db_ref()).await?;
-        let next_cursor = stories.last().map(|s| s.seqno + 1).unwrap_or_default();
-        let stories = stories.into_iter().map(Story::from).collect();
+        let entities = query.fetch_all(self.db_ref()).await?;
+        let next_cursor = entities.last().map(|s| s.seqno + 1).unwrap_or_default();
+        let stories = entities.into_iter().map(Story::from).collect();
         Ok((next_cursor, stories))
     }
 
     /// Insert a new story
-    pub async fn create_story(&self, name: String) -> Result<Story> {
+    pub async fn create_story<S: Into<String>>(&self, name: S) -> Result<Story> {
         let query = sqlx::query_as!(
             StoryEntity,
             r#"INSERT INTO stories (name) VALUES ($1)
             RETURNING id, name, seqno, created_at, updated_at"#,
-            name
+            name.into()
         );
-        let story = query.fetch_one(self.db_ref()).await?;
-        Ok(Story::from(story))
+        let entity = query.fetch_one(self.db_ref()).await?;
+        Ok(Story::from(entity))
     }
 
     /// Update story name
-    pub async fn update_story(&self, StoryId(story_id): StoryId, name: String) -> Result<Story> {
+    pub async fn update_story<S: Into<String>>(
+        &self,
+        &StoryId(story_id): &StoryId,
+        name: S,
+    ) -> Result<Story> {
         let query = sqlx::query_as!(
             StoryEntity,
             r#"UPDATE stories SET name = $1 WHERE id = $2
             RETURNING id, name, seqno, created_at, updated_at"#,
-            name,
+            name.into(),
             story_id
         );
-        let story = query.fetch_one(self.db_ref()).await?;
-        Ok(Story::from(story))
+        let entity = query.fetch_one(self.db_ref()).await?;
+        Ok(Story::from(entity))
     }
 
     /// Delete a story, child files, and child tasks.
-    pub async fn delete_story(&self, StoryId(story_id): StoryId) -> Result<()> {
+    pub async fn delete_story(&self, &StoryId(story_id): &StoryId) -> Result<()> {
         let mut tx = self.db.begin().await?;
 
         sqlx::query!("DELETE FROM tasks WHERE story_id = $1", story_id)
@@ -119,28 +123,21 @@ mod tests {
         let repo = Repo::new(pool);
 
         // Create story
-        let name = "Books To Read".to_string();
-        let story = repo.create_story(name.clone()).await.unwrap();
-        assert_eq!(name, story.name);
+        let story = repo.create_story("Books To Read").await.unwrap();
+        assert_eq!(story.name, "Books To Read");
 
         // Query stories page
-        let (_, stories) = repo.list_stories(1, 10).await.unwrap();
+        let (next_cursor, stories) = repo.list_stories(1, 10).await.unwrap();
+        assert_eq!(next_cursor, 2);
         assert_eq!(stories.len(), 1);
 
-        // Update the name
-        let updated_name = "Books".to_string();
-        repo.update_story(story.id.clone(), updated_name)
-            .await
-            .unwrap();
-
-        // Fetch and verify new name
-        let story = repo.fetch_story(story.id.clone()).await.unwrap();
+        // Update the story name
+        repo.update_story(&story.id, "Books").await.unwrap();
+        let story = repo.fetch_story(&story.id).await.unwrap();
         assert_eq!(story.name, "Books");
 
         // Delete the story
-        repo.delete_story(story.id.clone()).await.unwrap();
-
-        // Assert story was deleted
-        assert!(repo.fetch_story(story.id).await.is_err());
+        repo.delete_story(&story.id).await.unwrap();
+        assert!(repo.fetch_story(&story.id).await.is_err());
     }
 }

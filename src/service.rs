@@ -129,8 +129,8 @@ impl GsdxService for Service {
 
         // Action
         self.repo
-            .fetch_story(story_id)
-            .and_then(|s| self.repo.delete_story(s.id))
+            .fetch_story(&story_id)
+            .and_then(|_| self.repo.delete_story(&story_id))
             .await?;
 
         // Respond
@@ -175,8 +175,8 @@ impl GsdxService for Service {
         // Action
         let story = self
             .repo
-            .fetch_story(story_id)
-            .and_then(|s| self.repo.update_story(s.id, name))
+            .fetch_story(&story_id)
+            .and_then(|_| self.repo.update_story(&story_id, name))
             .await?;
 
         // Respond
@@ -195,12 +195,12 @@ impl GsdxService for Service {
 
         // Validate
         let story_id = validate_story_id(&request.story_id)?;
-        self.repo.fetch_story(story_id.clone()).await?;
+        self.repo.fetch_story(&story_id).await?;
 
         // Action
         let tasks = self
             .repo
-            .list_tasks(story_id)
+            .list_tasks(&story_id)
             .await?
             .into_iter()
             .map(TaskData::from)
@@ -225,7 +225,7 @@ impl GsdxService for Service {
         let status = Status::from(proto_status);
 
         // Action
-        let task = self.repo.create_task(story_id, name, status).await?;
+        let task = self.repo.create_task(&story_id, name, status).await?;
 
         // Respond
         Ok(Response::new(CreateTaskResponse {
@@ -246,8 +246,8 @@ impl GsdxService for Service {
 
         // Action
         self.repo
-            .fetch_task(task_id)
-            .and_then(|t| self.repo.delete_task(t.id))
+            .fetch_task(&task_id)
+            .and_then(|_| self.repo.delete_task(&task_id))
             .await?;
 
         // Respond
@@ -270,8 +270,8 @@ impl GsdxService for Service {
         // Action
         let task = self
             .repo
-            .fetch_task(task_id)
-            .and_then(|t| self.repo.update_task(t.id, t.name, status))
+            .fetch_task(&task_id)
+            .and_then(|t| self.repo.update_task(&task_id, t.name, status))
             .await?;
 
         // Respond
