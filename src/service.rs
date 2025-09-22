@@ -10,7 +10,10 @@ use crate::{
         UpdateTaskResponse,
     },
     repo::Repo,
-    usecase::{UseCase, story::ListStories},
+    usecase::{
+        UseCase,
+        story::{CreateStory, DeleteStory, ListStories, UpdateStory},
+    },
     util::{
         clamp_page_bounds, mk_prost_ts, validate_story_id, validate_string_length, validate_task_id,
     },
@@ -22,13 +25,23 @@ use tonic::{Request, Response, Status as GrpcStatus};
 
 /// GSDX gRPC service.
 pub struct Service {
+    create_story: CreateStory,
+    list_stories: ListStories,
+    delete_story: DeleteStory,
+    update_story: UpdateStory,
     repo: Arc<Repo>,
 }
 
 impl Service {
     /// Constructor
     pub fn new(repo: Arc<Repo>) -> Self {
-        Self { repo }
+        Self {
+            create_story: CreateStory::new(repo.clone()),
+            list_stories: ListStories::new(repo.clone()),
+            delete_story: DeleteStory::new(repo.clone()),
+            update_story: UpdateStory::new(repo.clone()),
+            repo,
+        }
     }
 }
 
@@ -109,8 +122,8 @@ impl GsdxService for Service {
         // Validate
         let name = validate_string_length(&request.name, "name")?;
 
-        // Action
-        let story = self.repo.create_story(name).await?;
+        // Execute use case
+        let story = self.create_story.execute(name).await?;
 
         // Respond
         Ok(Response::new(CreateStoryResponse {
@@ -125,16 +138,10 @@ impl GsdxService for Service {
     ) -> Result<Response<DeleteStoryResponse>, GrpcStatus> {
         log::debug!("Delete story");
         let request = request.get_ref(); // Upack request
-
         // Validate
         let story_id = validate_story_id(&request.story_id)?;
-
-        // Action
-        self.repo
-            .fetch_story(&story_id)
-            .and_then(|_| self.repo.delete_story(&story_id))
-            .await?;
-
+        // Execute use case
+        self.delete_story.execute(story_id).await?;
         // Respond
         Ok(Response::new(DeleteStoryResponse {}))
     }
@@ -146,16 +153,12 @@ impl GsdxService for Service {
     ) -> Result<Response<ListStoriesResponse>, GrpcStatus> {
         log::debug!("List stories");
         let request = request.get_ref(); // Upack request
-
         // Validate
         let (cursor, limit) = clamp_page_bounds(request.cursor, request.limit);
         log::debug!("Page params: cursor: {}, limit: {}", cursor, limit);
-
-        // Business logic
-        let list_stories = ListStories::new(self.repo.clone());
+        // Execute use case
         let args = ListStories::args(cursor, limit);
-        let (next_cursor, stories) = list_stories.execute(args).await?;
-
+        let (next_cursor, stories) = self.list_stories.execute(args).await?;
         // Respond
         let stories = stories.into_iter().map(StoryData::from).collect();
         Ok(Response::new(ListStoriesResponse {
@@ -171,18 +174,12 @@ impl GsdxService for Service {
     ) -> Result<Response<UpdateStoryResponse>, GrpcStatus> {
         log::debug!("Update story");
         let request = request.get_ref(); // Upack request
-
         // Validate
         let story_id = validate_story_id(&request.story_id)?;
         let name = validate_string_length(&request.name, "name")?;
-
-        // Action
-        let story = self
-            .repo
-            .fetch_story(&story_id)
-            .and_then(|_| self.repo.update_story(&story_id, name))
-            .await?;
-
+        // Execute use case
+        let args = UpdateStory::args(story_id, name);
+        let story = self.update_story.execute(args).await?;
         // Respond
         Ok(Response::new(UpdateStoryResponse {
             story: Some(StoryData::from(story)),
