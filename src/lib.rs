@@ -35,6 +35,9 @@ pub mod server;
 /// gRPC service layer.
 pub mod service;
 
+/// Business logic.
+pub mod usecase;
+
 /// Utility functions.
 pub mod util;
 

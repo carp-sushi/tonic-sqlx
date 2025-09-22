@@ -25,7 +25,7 @@ pub async fn serve(
 
     // Setup the GSDX service with gzip compression.
     let repo = Repo::new(Arc::clone(&pool));
-    let gsdx_service = GsdxServiceServer::new(Service::new(repo))
+    let gsdx_service = GsdxServiceServer::new(Service::new(Arc::new(repo)))
         .send_compressed(Gzip)
         .accept_compressed(Gzip);
 

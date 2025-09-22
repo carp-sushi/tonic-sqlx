@@ -10,22 +10,24 @@ use crate::{
         UpdateTaskResponse,
     },
     repo::Repo,
+    usecase::{UseCase, story::ListStories},
     util::{
         clamp_page_bounds, mk_prost_ts, validate_story_id, validate_string_length, validate_task_id,
     },
 };
 
 use futures_util::TryFutureExt;
+use std::sync::Arc;
 use tonic::{Request, Response, Status as GrpcStatus};
 
 /// GSDX gRPC service.
 pub struct Service {
-    repo: Repo,
+    repo: Arc<Repo>,
 }
 
 impl Service {
     /// Constructor
-    pub fn new(repo: Repo) -> Self {
+    pub fn new(repo: Arc<Repo>) -> Self {
         Self { repo }
     }
 }
@@ -149,8 +151,10 @@ impl GsdxService for Service {
         let (cursor, limit) = clamp_page_bounds(request.cursor, request.limit);
         log::debug!("Page params: cursor: {}, limit: {}", cursor, limit);
 
-        // Action
-        let (next_cursor, stories) = self.repo.list_stories(cursor, limit).await?;
+        // Business logic
+        let list_stories = ListStories::new(self.repo.clone());
+        let args = ListStories::args(cursor, limit);
+        let (next_cursor, stories) = list_stories.execute(args).await?;
 
         // Respond
         let stories = stories.into_iter().map(StoryData::from).collect();
