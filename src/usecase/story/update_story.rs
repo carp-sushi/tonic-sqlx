@@ -34,7 +34,15 @@ impl UseCase for UpdateStory {
     async fn execute(&self, req: Self::Req) -> Self::Rep {
         self.repo
             .fetch_story(&req.story_id)
-            .and_then(|_| self.repo.update_story(&req.story_id, req.name))
+            .and_then(async |s| {
+                if s.name == req.name {
+                    log::info!("Story name is the same, skipping update");
+                    Ok(s)
+                } else {
+                    log::info!("Updating story name");
+                    self.repo.update_story(&req.story_id, req.name).await
+                }
+            })
             .await
     }
 }

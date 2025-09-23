@@ -1,8 +1,4 @@
-use crate::Result;
-use crate::domain::Story;
-use crate::repo::Repo;
-use crate::usecase::UseCase;
-
+use crate::{Result, domain::Story, repo::Repo, usecase::UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 

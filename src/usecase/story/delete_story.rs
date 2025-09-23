@@ -1,5 +1,4 @@
 use crate::{Result, domain::StoryId, repo::Repo, usecase::UseCase};
-
 use async_trait::async_trait;
 use futures_util::TryFutureExt;
 use std::sync::Arc;
