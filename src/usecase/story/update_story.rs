@@ -8,6 +8,7 @@ use async_trait::async_trait;
 use futures_util::TryFutureExt;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct Args {
     pub story_id: StoryId,
     pub name: String,

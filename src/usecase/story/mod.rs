@@ -1,7 +1,7 @@
-pub mod create_story;
-pub mod delete_story;
-pub mod list_stories;
-pub mod update_story;
+mod create_story;
+mod delete_story;
+mod list_stories;
+mod update_story;
 
 pub use create_story::CreateStory;
 pub use delete_story::DeleteStory;
