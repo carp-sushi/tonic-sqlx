@@ -11,19 +11,19 @@ pub enum Error {
 
 // Error helpers
 impl Error {
-    pub fn internal<T: Into<String>>(message: T) -> Self {
+    pub fn internal(message: impl Into<String>) -> Self {
         Error::Internal {
             message: message.into(),
         }
     }
 
-    pub fn not_found<T: Into<String>>(message: T) -> Self {
+    pub fn not_found(message: impl Into<String>) -> Self {
         Error::NotFound {
             message: message.into(),
         }
     }
 
-    pub fn invalid_args<T: Into<String>>(message: T) -> Self {
+    pub fn invalid_args(message: impl Into<String>) -> Self {
         Error::InvalidArgs {
             messages: vec![message.into()],
         }

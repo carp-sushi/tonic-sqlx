@@ -64,10 +64,10 @@ impl Repo {
     }
 
     /// Insert a new task
-    pub async fn create_task<S: Into<String>>(
+    pub async fn create_task(
         &self,
         &StoryId(story_id): &StoryId,
-        name: S,
+        name: impl Into<String>,
         status: Status,
     ) -> Result<Task> {
         let query = sqlx::query_as!(
@@ -83,10 +83,10 @@ impl Repo {
     }
 
     /// Update task name and status.
-    pub async fn update_task<S: Into<String>>(
+    pub async fn update_task(
         &self,
         &TaskId(task_id): &TaskId,
-        name: S,
+        name: impl Into<String>,
         status: Status,
     ) -> Result<Task> {
         let query = sqlx::query_as!(

@@ -1,7 +1,6 @@
-use std::env;
-use std::path::PathBuf;
+use std::{env, error::Error, path::PathBuf};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
     tonic_prost_build::configure()
         .build_client(true)

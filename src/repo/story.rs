@@ -59,7 +59,7 @@ impl Repo {
     }
 
     /// Insert a new story
-    pub async fn create_story<S: Into<String>>(&self, name: S) -> Result<Story> {
+    pub async fn create_story(&self, name: impl Into<String>) -> Result<Story> {
         let query = sqlx::query_as!(
             StoryEntity,
             r#"INSERT INTO stories (name) VALUES ($1)
@@ -71,10 +71,10 @@ impl Repo {
     }
 
     /// Update story name
-    pub async fn update_story<S: Into<String>>(
+    pub async fn update_story(
         &self,
         &StoryId(story_id): &StoryId,
-        name: S,
+        name: impl Into<String>,
     ) -> Result<Story> {
         let query = sqlx::query_as!(
             StoryEntity,
