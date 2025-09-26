@@ -15,7 +15,8 @@ use crate::{
         story::{CreateStory, DeleteStory, ListStories, UpdateStory},
     },
     util::{
-        clamp_page_bounds, mk_prost_ts, validate_story_id, validate_string_length, validate_task_id,
+        clamp_page_bounds, mk_prost_ts, validate_optional_string_length, validate_story_id,
+        validate_string_length, validate_task_id,
     },
 };
 
@@ -261,18 +262,22 @@ impl GsdxService for Service {
         request: Request<UpdateTaskRequest>,
     ) -> Result<Response<UpdateTaskResponse>, GrpcStatus> {
         log::debug!("Update task");
-        let request = request.get_ref(); // Upack request
+        let request = request.into_inner(); // Upack request
 
         // Validate
         let task_id = validate_task_id(&request.task_id)?;
         let proto_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
         let status = Status::from(proto_status);
+        let maybe_name = validate_optional_string_length(request.name, "name")?;
 
         // Action
         let task = self
             .repo
             .fetch_task(&task_id)
-            .and_then(|t| self.repo.update_task(&task_id, t.name, status))
+            .and_then(|t| {
+                let name = maybe_name.unwrap_or(t.name);
+                self.repo.update_task(&task_id, name, status)
+            })
             .await?;
 
         // Respond

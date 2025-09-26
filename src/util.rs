@@ -10,7 +10,19 @@ const MAX_STR_LEN: usize = 1000;
 const MIN_PAGE_LIMIT: i64 = 10;
 const MAX_PAGE_LIMIT: i64 = 100;
 
-/// Pust some reasonable limit on string length.
+/// Validate a string's length if it is defined.
+pub fn validate_optional_string_length(
+    maybe_value: Option<String>,
+    param_name: &str,
+) -> Result<Option<String>> {
+    if let Some(value) = maybe_value {
+        let validated = validate_string_length(&value, param_name)?;
+        return Ok(Some(validated));
+    }
+    Ok(None)
+}
+
+/// Put some reasonable limit on string length.
 pub fn validate_string_length(value: &str, param_name: &str) -> Result<String> {
     let value = value.trim().to_string();
     if value.is_empty() {

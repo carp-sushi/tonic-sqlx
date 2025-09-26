@@ -153,8 +153,10 @@ message DeleteTaskResponse {}
 message UpdateTaskRequest {
   // The task id
   string task_id = 1;
-  // The updated status of the task.
+  // The updated status of the task (required).
   TaskStatus status = 2;
+  // The updated name of the task (optional).
+  optional string name = 3;
 }
 
 // Response from updating a task.
