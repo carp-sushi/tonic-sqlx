@@ -17,6 +17,9 @@ pub mod proto {
 /// Configuration from environment variables.
 pub mod config;
 
+/// Container for use cases.
+pub mod context;
+
 /// Domain models and logic.
 pub mod domain;
 
