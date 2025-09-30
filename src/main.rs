@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             MIGRATOR.run(&pool).await?;
         }
         Cmd::Server => {
-            gsdx::server::serve(Arc::new(pool), config.grpc_listen_addr).await?;
+            gsdx::server::serve(Arc::new(pool), config.listen_addr).await?;
         }
     }
 

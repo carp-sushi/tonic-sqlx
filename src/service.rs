@@ -260,18 +260,25 @@ impl GsdxService for Service {
         request: Request<UpdateTaskRequest>,
     ) -> Result<Response<UpdateTaskResponse>, GrpcStatus> {
         log::debug!("Update task");
-        let request = request.get_ref(); // Upack request
+        let request = request.into_inner(); // Consume request
 
         // Validate
         let task_id = validate_task_id(&request.task_id)?;
-        let proto_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
-        let status = Status::from(proto_status);
+        let status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
+        let name = request
+            .name
+            .map(|n| validate_string_length(&n, "name"))
+            .transpose()?;
 
         // Action
         let task = self
             .repo
             .fetch_task(&task_id)
-            .and_then(|t| self.repo.update_task(&task_id, t.name, status))
+            .and_then(|t| {
+                let name = name.unwrap_or(t.name);
+                let status = Status::from(status);
+                self.repo.update_task(&task_id, name, status)
+            })
             .await?;
 
         // Respond

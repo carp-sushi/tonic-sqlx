@@ -155,6 +155,8 @@ message UpdateTaskRequest {
   string task_id = 1;
   // The updated status of the task.
   TaskStatus status = 2;
+  // The updated name of the task.
+  optional string name = 3;
 }
 
 // Response from updating a task.
