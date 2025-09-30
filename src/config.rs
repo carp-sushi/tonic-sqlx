@@ -2,19 +2,12 @@ use sqlx::{Executor, postgres::PgPoolOptions};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 
 /// Configuration settings
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Config {
     pub grpc_listen_addr: SocketAddr,
     pub db_max_connections: u32,
     pub db_url: String,
     pub db_schema: String,
-}
-
-/// Default for config just calls basic constructor
-impl Default for Config {
-    fn default() -> Self {
-        Self::load()
-    }
 }
 
 impl Config {
@@ -50,7 +43,7 @@ impl Config {
         let schema = Arc::new(self.db_schema.clone());
         PgPoolOptions::new()
             .max_connections(self.db_max_connections)
-            .acquire_timeout(Duration::from_secs(15))
+            .acquire_timeout(Duration::from_secs(10))
             .after_connect(move |conn, _meta| {
                 let schema = Arc::clone(&schema);
                 Box::pin(async move {

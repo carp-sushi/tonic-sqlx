@@ -35,14 +35,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Parse command line arguments
     let cli = Cli::parse();
 
-    // Load config
+    // Load config from environment variables.
     let config = Config::load();
-    log::debug!("Loaded config = {:?}", config);
 
-    // Load connection pool
+    // Load database connection pool.
     let pool = config.db_pool_opts().connect(&config.db_url).await?;
 
-    // Run schema migrations or start server based on the command line arguments provided.
+    // Run the command provided.
     match cli.cmd {
         Cmd::Migrate => {
             log::info!("Running migrations");
