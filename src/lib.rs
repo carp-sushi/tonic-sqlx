@@ -7,6 +7,12 @@
     clippy::wildcard_imports
 )]
 
+/// Export error type
+pub use error::Error;
+
+/// Result type for the project.
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
 /// Protobuf definitions.
 pub mod proto {
     tonic::include_proto!("gsdx.v1");
@@ -17,7 +23,7 @@ pub mod proto {
 /// Configuration from environment variables.
 pub mod config;
 
-/// Domain models and logic.
+/// Domain objects.
 pub mod domain;
 
 /// Project errors.
@@ -26,20 +32,17 @@ pub mod error;
 /// Health check.
 pub mod health;
 
+/// Request interceptor.
+pub mod interceptor;
+
 /// A light-weight abstraction over the database.
 pub mod repo;
 
-/// The GSDX gRPC server functionality.
+/// gRPC server layer.
 pub mod server;
 
 /// gRPC service layer.
 pub mod service;
 
-/// Utility functions.
+/// Utility (validation, paging) functions.
 pub mod util;
-
-/// Export error type
-pub use error::Error;
-
-/// Result type for the project.
-pub type Result<T, E = Error> = std::result::Result<T, E>;

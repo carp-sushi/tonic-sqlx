@@ -1,5 +1,6 @@
 use crate::{
     health::health_check,
+    interceptor::RequestInterceptor,
     proto::{GSDX_V1_FILE_DESCRIPTOR_SET, gsdx_service_server::GsdxServiceServer},
     repo::Repo,
     service::Service,
@@ -7,7 +8,9 @@ use crate::{
 
 use sqlx::postgres::PgPool;
 use std::{net::SocketAddr, sync::Arc};
-use tonic::{codec::CompressionEncoding::Gzip, transport::Server};
+use tonic::{
+    codec::CompressionEncoding::Gzip, service::interceptor::InterceptedService, transport::Server,
+};
 
 /// Start the gRPC server.
 pub async fn serve(
@@ -25,9 +28,12 @@ pub async fn serve(
 
     // Setup the GSDX service with gzip compression.
     let repo = Repo::new(Arc::clone(&pool));
-    let gsdx_service = GsdxServiceServer::new(Service::new(repo))
+    let gsdx_service_server = GsdxServiceServer::new(Service::new(repo))
         .send_compressed(Gzip)
         .accept_compressed(Gzip);
+
+    // Wrap server with request interceptor.
+    let gsdx_service = InterceptedService::new(gsdx_service_server, RequestInterceptor::new());
 
     // Serve gRPC services
     log::info!("Server listening on {}", grpc_listen_addr);
