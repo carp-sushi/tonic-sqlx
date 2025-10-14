@@ -7,7 +7,6 @@ edition = "2024"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.5", features = ["derive"] }
 dotenvy = "0.15"
-env_logger = "0.11"
 futures-util = "0.3"
 log = "0.4"
 mimalloc = { version = "0.1", default-features = false }
@@ -29,6 +28,9 @@ tonic = { version = "0.14", features = ["gzip"] }
 tonic-health = "0.14"
 tonic-prost = "0.14"
 tonic-reflection = "0.14"
+tower-http = { version = "0.6", features = ["limit", "trace"] }
+tracing = { version = "0.1" }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 
 [build-dependencies]

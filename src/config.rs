@@ -43,7 +43,7 @@ impl Config {
         let schema = Arc::new(self.db_schema.clone());
         PgPoolOptions::new()
             .max_connections(self.db_max_connections)
-            .acquire_timeout(Duration::from_secs(15))
+            .acquire_timeout(Duration::from_secs(5))
             .after_connect(move |conn, _meta| {
                 let schema = Arc::clone(&schema);
                 Box::pin(async move {

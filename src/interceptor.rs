@@ -19,7 +19,7 @@ impl Default for RequestInterceptor {
 
 impl Interceptor for RequestInterceptor {
     fn call(&mut self, request: Request<()>) -> Result<Request<()>, Status> {
-        log::info!("Got {:?} from {:?}", request, request.remote_addr());
+        tracing::info!("Got {:?} from {:?}", request, request.remote_addr());
         Ok(request)
     }
 }

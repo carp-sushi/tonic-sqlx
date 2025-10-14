@@ -33,7 +33,7 @@ pub async fn serve(pool: Arc<PgPool>, listen_addr: SocketAddr) -> Result<(), Box
     let gsdx_service = InterceptedService::new(gsdx_service_server, RequestInterceptor::new());
 
     // Serve gRPC services
-    log::info!("Server listening on {}", listen_addr);
+    tracing::info!("Server listening on {}", listen_addr);
     Server::builder()
         .add_service(health_service)
         .add_service(reflection_service)

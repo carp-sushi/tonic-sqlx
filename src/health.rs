@@ -8,15 +8,15 @@ use tonic_health::{
 
 /// Health check for the gRPC server. Makes sure the database is accessible.
 pub async fn health_check(reporter: HealthReporter, db: Arc<PgPool>) {
-    log::info!("Starting health check loop");
+    tracing::info!("Starting health check loop");
     loop {
         time::sleep(Duration::from_secs(2)).await;
-        log::debug!("Running health check query");
+        tracing::debug!("Running health check query");
         let query_fut = sqlx::query("SELECT 1").fetch_one(db.as_ref());
         let status = match query_fut.await {
             Ok(_) => Serving,
             Err(err) => {
-                log::error!("Health check failed: {}", err);
+                tracing::error!("Health check failed: {}", err);
                 NotServing
             }
         };

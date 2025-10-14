@@ -101,7 +101,7 @@ impl GsdxService for Service {
         &self,
         request: Request<CreateStoryRequest>,
     ) -> Result<Response<CreateStoryResponse>, GrpcStatus> {
-        log::debug!("Create story");
+        tracing::debug!("Create story");
         let request = request.get_ref(); // Upack request
 
         // Validate
@@ -121,7 +121,7 @@ impl GsdxService for Service {
         &self,
         request: Request<DeleteStoryRequest>,
     ) -> Result<Response<DeleteStoryResponse>, GrpcStatus> {
-        log::debug!("Delete story");
+        tracing::debug!("Delete story");
         let request = request.get_ref(); // Upack request
 
         // Validate
@@ -142,7 +142,7 @@ impl GsdxService for Service {
         &self,
         request: Request<ListStoriesRequest>,
     ) -> Result<Response<ListStoriesResponse>, GrpcStatus> {
-        log::debug!("List stories");
+        tracing::debug!("List stories");
         let request = request.get_ref(); // Upack request
 
         // Validate
@@ -165,7 +165,7 @@ impl GsdxService for Service {
         &self,
         request: Request<UpdateStoryRequest>,
     ) -> Result<Response<UpdateStoryResponse>, GrpcStatus> {
-        log::debug!("Update story");
+        tracing::debug!("Update story");
         let request = request.get_ref(); // Upack request
 
         // Validate
@@ -190,7 +190,7 @@ impl GsdxService for Service {
         &self,
         request: Request<ListTasksRequest>,
     ) -> Result<Response<ListTasksResponse>, GrpcStatus> {
-        log::debug!("List tasks");
+        tracing::debug!("List tasks");
         let request = request.get_ref(); // Upack request
 
         // Validate
@@ -215,7 +215,7 @@ impl GsdxService for Service {
         &self,
         request: Request<CreateTaskRequest>,
     ) -> Result<Response<CreateTaskResponse>, GrpcStatus> {
-        log::debug!("Create task");
+        tracing::debug!("Create task");
         let request = request.get_ref(); // Upack request
 
         // Validate
@@ -238,7 +238,7 @@ impl GsdxService for Service {
         &self,
         request: Request<DeleteTaskRequest>,
     ) -> Result<Response<DeleteTaskResponse>, GrpcStatus> {
-        log::debug!("Delete task");
+        tracing::debug!("Delete task");
         let request = request.get_ref(); // Upack request
 
         // Validate
@@ -259,7 +259,7 @@ impl GsdxService for Service {
         &self,
         request: Request<UpdateTaskRequest>,
     ) -> Result<Response<UpdateTaskResponse>, GrpcStatus> {
-        log::debug!("Update task");
+        tracing::debug!("Update task");
         let request = request.into_inner(); // Consume request
 
         // Validate

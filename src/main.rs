@@ -7,6 +7,7 @@ use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use sqlx::migrate::Migrator;
 use std::{error::Error, sync::Arc};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 // Embed migrations into the GSDX binary.
 pub static MIGRATOR: Migrator = sqlx::migrate!();
@@ -28,16 +29,19 @@ enum Cmd {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    // Load env vars and init global logger
+    // Load env vars and init structured JSON logging.
     dotenv().ok();
-    env_logger::init();
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracing_subscriber::fmt::layer().json())
+        .init();
 
     // Parse command line arguments
     let cli = Cli::parse();
 
     // Load config
     let config = Config::load();
-    log::debug!("Loaded config = {:?}", config);
+    //tracing::debug!("Loaded config = {:?}", config);
 
     // Load connection pool
     let pool = config.db_pool_opts().connect(&config.db_url).await?;
@@ -45,7 +49,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Run schema migrations or start server based on the command line arguments provided.
     match cli.cmd {
         Cmd::Migrate => {
-            log::info!("Running migrations");
+            tracing::info!("Running migrations");
             MIGRATOR.run(&pool).await?;
         }
         Cmd::Server => {
