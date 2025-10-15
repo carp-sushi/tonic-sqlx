@@ -45,4 +45,4 @@ run-ui:
 
 .PHONY: migrate
 migrate:
-	@sqlx migrate run
+	@cargo run -- migrate

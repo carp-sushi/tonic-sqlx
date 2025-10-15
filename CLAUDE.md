@@ -29,16 +29,18 @@ make lint
 make all
 ```
 
-### Database Operations
+### Server Operations
 ```bash
-# Run database migrations
-make migrate
-
 # Start the server
 make run
+# Runs: cargo run -- server
 
 # Build release version
 make release
+
+# Run database migrations
+make migrate
+# Runs: cargo run -- migrate
 ```
 
 ### Development Tools
@@ -46,6 +48,12 @@ make release
 # Start gRPC UI for testing (requires grpcui)
 make run-ui
 ```
+
+## CLI Sub-Commands
+
+The GSDX binary supports the following sub-commands:
+- `server`: Starts the gRPC service with configured settings
+- `migrate`: Runs database migrations
 
 ## Architecture
 
