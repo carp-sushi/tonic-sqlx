@@ -17,20 +17,23 @@ pub static MIGRATOR: Migrator = sqlx::migrate!();
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
-    cmd: Cmd,
+    cmd: Option<Cmd>,
 }
 
 /// GSDX command line interface subcommands for running the server or migrations.
-#[derive(Subcommand, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Subcommand, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
 enum Cmd {
-    Migrate,
+    #[default]
     Server,
+    Migrate,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    // Load env vars and init structured JSON logging.
+    // Load environment variables from .env file.
     dotenv().ok();
+
+    // Initialize structured JSON logging (level is set via RUST_LOG environment variable).
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::from_default_env())
         .with(tracing_subscriber::fmt::layer().json())
@@ -41,13 +44,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Load config
     let config = Config::load();
-    //tracing::debug!("Loaded config = {:?}", config);
 
     // Load connection pool
     let pool = config.db_pool_opts().connect(&config.db_url).await?;
 
     // Run schema migrations or start server based on the command line arguments provided.
-    match cli.cmd {
+    match cli.cmd.unwrap_or_default() {
         Cmd::Migrate => {
             tracing::info!("Running migrations");
             MIGRATOR.run(&pool).await?;
