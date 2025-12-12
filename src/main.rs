@@ -2,6 +2,7 @@
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 use gsdx::config::Config;
+use gsdx::server::Server;
 
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
@@ -48,7 +49,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             MIGRATOR.run(&pool).await?;
         }
         Cmd::Server => {
-            gsdx::server::serve(Arc::new(pool), config.grpc_listen_addr).await?;
+            let server = Server::new(Arc::new(pool));
+            server.serve(config.grpc_listen_addr).await?;
         }
     }
 

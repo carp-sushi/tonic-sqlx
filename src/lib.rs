@@ -18,16 +18,13 @@ pub mod proto {
 pub mod config;
 
 /// Container for use cases.
-pub mod context;
+pub mod service;
 
 /// Domain models and logic.
 pub mod domain;
 
 /// Project errors.
 pub mod error;
-
-/// Health check.
-pub mod health;
 
 /// A light-weight abstraction over the database.
 pub mod repo;
@@ -36,7 +33,7 @@ pub mod repo;
 pub mod server;
 
 /// gRPC service layer.
-pub mod service;
+pub mod grpc;
 
 /// Business logic.
 pub mod usecase;

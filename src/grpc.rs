@@ -1,6 +1,5 @@
 use crate::{
     Error,
-    context::Context,
     domain::{Status, Story, StoryId, Task},
     proto::gsdx_service_server::GsdxService,
     proto::{
@@ -10,6 +9,7 @@ use crate::{
         TaskData, TaskStatus, UpdateStoryRequest, UpdateStoryResponse, UpdateTaskRequest,
         UpdateTaskResponse,
     },
+    service::Service,
     usecase::{
         UseCase,
         story::UpdateStory,
@@ -23,14 +23,14 @@ use crate::{
 
 use tonic::{Request, Response, Status as GrpcStatus};
 
-/// GSDX gRPC service implementation.
-pub struct Service {
-    ctx: Context,
+/// GSDX gRPC implementation.
+pub struct Gsdx {
+    ctx: Service,
 }
 
-impl Service {
+impl Gsdx {
     /// Constructor
-    pub fn new(ctx: Context) -> Self {
+    pub fn new(ctx: Service) -> Self {
         Self { ctx }
     }
 }
@@ -100,7 +100,7 @@ impl From<Task> for TaskData {
 }
 
 #[tonic::async_trait]
-impl GsdxService for Service {
+impl GsdxService for Gsdx {
     /// Create a new story.
     async fn create_story(
         &self,
