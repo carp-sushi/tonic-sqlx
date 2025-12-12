@@ -1,10 +1,10 @@
 use sqlx::{Executor, postgres::PgPoolOptions};
-use std::{env, net::SocketAddr, sync::Arc, time::Duration};
+use std::{env, net::SocketAddr, sync::Arc};
 
 /// Configuration settings
 #[derive(Debug)]
 pub struct Config {
-    pub grpc_listen_addr: SocketAddr,
+    pub listen_addr: SocketAddr,
     pub db_max_connections: u32,
     pub db_url: String,
     pub db_schema: String,
@@ -15,7 +15,7 @@ impl Config {
     pub fn load() -> Self {
         // http server settings
         let port = env::var("GRPC_SERVER_PORT").unwrap_or("9090".into());
-        let grpc_listen_addr = format!("0.0.0.0:{port}")
+        let listen_addr = format!("0.0.0.0:{port}")
             .parse()
             .expect("grpc_listen_addr could not be parsed");
 
@@ -31,7 +31,7 @@ impl Config {
 
         // Create config
         Self {
-            grpc_listen_addr,
+            listen_addr,
             db_max_connections,
             db_url,
             db_schema,
@@ -43,7 +43,6 @@ impl Config {
         let schema = Arc::new(self.db_schema.clone());
         PgPoolOptions::new()
             .max_connections(self.db_max_connections)
-            .acquire_timeout(Duration::from_secs(10))
             .after_connect(move |conn, _meta| {
                 let schema = Arc::clone(&schema);
                 Box::pin(async move {

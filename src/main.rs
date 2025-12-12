@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         Cmd::Server => {
             let server = Server::new(Arc::new(pool));
-            server.serve(config.grpc_listen_addr).await?;
+            server.listen(config.listen_addr).await?;
         }
     }
 

@@ -12,19 +12,21 @@ use tonic::{codec::CompressionEncoding::Gzip, transport::Server as TransportServ
 mod health;
 use health::health_check;
 
+// The GSDX gRPC server
 pub struct Server {
     pool: Arc<PgPool>,
 }
 
 impl Server {
+    /// Create a new server
     pub fn new(pool: Arc<PgPool>) -> Self {
         Self { pool }
     }
 }
 
 impl Server {
-    /// Start the gRPC server.
-    pub async fn serve(
+    /// Start the GSDX gRPC server on the given socket address.
+    pub async fn listen(
         &self,
         grpc_listen_addr: SocketAddr,
     ) -> Result<(), Box<dyn std::error::Error>> {
