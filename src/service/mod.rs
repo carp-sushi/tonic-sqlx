@@ -9,16 +9,16 @@ pub use task::TaskService;
 
 /// A container for services.
 pub struct Service {
-    pub stories: StoryService,
-    pub tasks: TaskService,
+    pub story: StoryService,
+    pub task: TaskService,
 }
 
 impl Service {
     /// Constructor
     pub fn new(repo: Arc<Repo>) -> Self {
         Self {
-            stories: StoryService::new(Arc::clone(&repo)),
-            tasks: TaskService::new(Arc::clone(&repo)),
+            story: StoryService::new(Arc::clone(&repo)),
+            task: TaskService::new(Arc::clone(&repo)),
         }
     }
 }

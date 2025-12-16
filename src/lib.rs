@@ -17,7 +17,7 @@ pub mod proto {
 /// Configuration from environment variables.
 pub mod config;
 
-/// Container for use cases.
+/// The service layer (ie use case groups).
 pub mod service;
 
 /// Domain models and logic.
@@ -29,17 +29,14 @@ pub mod error;
 /// A light-weight abstraction over the database.
 pub mod repo;
 
-/// The GSDX gRPC server functionality.
+/// The GSDX transport server.
 pub mod server;
 
-/// gRPC service layer.
+/// gRPC implementation layer.
 pub mod grpc;
 
 /// Business logic.
 pub mod usecase;
-
-/// Utility functions.
-pub mod util;
 
 /// Export error type
 pub use error::Error;

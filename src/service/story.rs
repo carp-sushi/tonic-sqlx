@@ -6,20 +6,20 @@ use std::sync::Arc;
 
 /// Story use cases.
 pub struct StoryService {
-    pub create_story: CreateStory,
-    pub list_stories: ListStories,
-    pub delete_story: DeleteStory,
-    pub update_story: UpdateStory,
+    pub create: CreateStory,
+    pub list: ListStories,
+    pub delete: DeleteStory,
+    pub update: UpdateStory,
 }
 
 impl StoryService {
     /// Constructor
     pub fn new(repo: Arc<Repo>) -> Self {
         Self {
-            create_story: CreateStory::new(Arc::clone(&repo)),
-            list_stories: ListStories::new(Arc::clone(&repo)),
-            delete_story: DeleteStory::new(Arc::clone(&repo)),
-            update_story: UpdateStory::new(Arc::clone(&repo)),
+            create: CreateStory::new(Arc::clone(&repo)),
+            list: ListStories::new(Arc::clone(&repo)),
+            delete: DeleteStory::new(Arc::clone(&repo)),
+            update: UpdateStory::new(Arc::clone(&repo)),
         }
     }
 }

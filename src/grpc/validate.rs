@@ -2,8 +2,6 @@ use crate::{
     Error, Result,
     domain::{StoryId, TaskId},
 };
-use chrono::{DateTime, Utc};
-use prost_types::Timestamp;
 use uuid::Uuid;
 
 const MAX_STR_LEN: usize = 1000;
@@ -60,14 +58,6 @@ pub fn clamp_page_bounds(cursor: i64, limit: i64) -> (i64, i64) {
     let cursor = cursor.clamp(1, i64::MAX);
     let limit = limit.clamp(MIN_PAGE_LIMIT, MAX_PAGE_LIMIT);
     (cursor, limit)
-}
-
-/// Convert a domain timestamp to a gRPC timestamp.
-pub fn mk_prost_ts(dt: DateTime<Utc>) -> Option<Timestamp> {
-    Some(Timestamp {
-        seconds: dt.timestamp(),
-        nanos: dt.timestamp_subsec_nanos() as i32,
-    })
 }
 
 #[cfg(test)]
