@@ -1,5 +1,4 @@
-use sqlx::{Executor, postgres::PgPoolOptions};
-use std::{env, net::SocketAddr, sync::Arc};
+use std::{env, net::SocketAddr};
 
 /// Configuration settings
 #[derive(Debug)]
@@ -9,6 +8,8 @@ pub struct Config {
     pub db_url: String,
     pub db_schema: String,
 }
+
+mod db;
 
 impl Config {
     /// Load config from env vars.
@@ -36,20 +37,5 @@ impl Config {
             db_url,
             db_schema,
         }
-    }
-
-    /// Create a new database connection pool options for postgres.
-    pub fn db_pool_opts(&self) -> PgPoolOptions {
-        let schema = Arc::new(self.db_schema.clone());
-        PgPoolOptions::new()
-            .max_connections(self.db_max_connections)
-            .after_connect(move |conn, _meta| {
-                let schema = Arc::clone(&schema);
-                Box::pin(async move {
-                    conn.execute(format!("SET search_path = '{schema}';").as_ref())
-                        .await?;
-                    Ok(())
-                })
-            })
     }
 }
