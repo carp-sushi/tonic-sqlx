@@ -6,7 +6,7 @@ use tonic_health::{
     server::HealthReporter,
 };
 
-/// Health check for the gRPC server. Makes sure the database is accessible.
+/// Health check for the gRPC transport server. Makes sure the database is accessible.
 pub async fn health_check(reporter: HealthReporter, db: Arc<PgPool>) {
     log::info!("Starting health check loop");
     loop {
