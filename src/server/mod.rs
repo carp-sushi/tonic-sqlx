@@ -19,8 +19,10 @@ pub struct Server {
 
 impl Server {
     /// Create a new server
-    pub fn new(pool: Arc<PgPool>) -> Self {
-        Self { pool }
+    pub fn new(pool: PgPool) -> Self {
+        Self {
+            pool: Arc::new(pool),
+        }
     }
 }
 

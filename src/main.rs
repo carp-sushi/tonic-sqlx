@@ -6,7 +6,7 @@ use gsdx::{config::Config, server::Server};
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use sqlx::migrate::Migrator;
-use std::{error::Error, sync::Arc};
+use std::error::Error;
 
 // Embed migrations into the GSDX binary.
 pub static MIGRATOR: Migrator = sqlx::migrate!();
@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             MIGRATOR.run(&pool).await?;
         }
         Cmd::Server => {
-            let server = Server::new(Arc::new(pool));
+            let server = Server::new(pool);
             server.listen(config.listen_addr).await?;
         }
     }
