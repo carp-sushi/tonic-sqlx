@@ -1,8 +1,7 @@
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-use gsdx::config::Config;
-use gsdx::server::Server;
+use gsdx::{config::Config, server::Server};
 
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;

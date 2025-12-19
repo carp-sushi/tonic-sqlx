@@ -17,10 +17,10 @@ pub mod proto {
 /// Configuration from environment variables.
 pub mod config;
 
-/// The service layer (ie use case groups).
+/// The service layer.
 pub mod service;
 
-/// Domain models and logic.
+/// Domain models.
 pub mod domain;
 
 /// Project errors.
