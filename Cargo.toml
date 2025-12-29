@@ -36,8 +36,8 @@ uuid = { version = "1", features = ["serde", "v4"] }
 tonic-prost-build = "0.14"
 
 [dev-dependencies]
-testcontainers = "0.25"
-testcontainers-modules = { version = "0.13", features = ["postgres"] }
+testcontainers = "0.26"
+testcontainers-modules = { version = "0.14", features = ["postgres"] }
 
 [profile.release]
 codegen-units = 1
