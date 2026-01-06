@@ -10,9 +10,12 @@ create extension if not exists pgcrypto;
 create or replace function
   create_timestamps()
   returns trigger as $$
+declare
+  ts timestamptz;
 begin
-  new.created_at = now();
-  new.updated_at = now();
+  ts := now();
+  new.created_at = ts;
+  new.updated_at = ts;
   return new;
 end $$
 language plpgsql;
@@ -106,4 +109,3 @@ begin
     execute format('CREATE OR REPLACE TRIGGER %I_undeleteable_table AFTER DELETE ON %I FOR EACH STATEMENT EXECUTE FUNCTION raise_undeletable_table_exception();', table_name, table_name);
 end $$
 language plpgsql;
-
