@@ -1,7 +1,7 @@
 use super::Repo;
 use crate::{
     Error, Result,
-    domain::{Story, StoryId},
+    domain::{Cursor, Limit, Story, StoryId},
 };
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
@@ -44,7 +44,7 @@ impl Repo {
     }
 
     /// Select a page of stories.
-    pub async fn list_stories(&self, cursor: i64, limit: i64) -> Result<(i64, Vec<Story>)> {
+    pub async fn list_stories(&self, cursor: Cursor, limit: Limit) -> Result<(Cursor, Vec<Story>)> {
         let query = sqlx::query_as!(
             StoryEntity,
             r#"SELECT id, name, seqno, created_at, updated_at FROM stories WHERE seqno >= $1

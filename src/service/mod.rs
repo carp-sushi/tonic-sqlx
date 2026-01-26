@@ -1,7 +1,7 @@
-// Expose the story service layer
+// Expose the story effects
 mod story;
 pub use story::StoryService;
 
-// Expose the task service layer
+// Expose the task effects
 mod task;
 pub use task::TaskService;

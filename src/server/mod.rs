@@ -1,4 +1,5 @@
 use crate::{
+    domain::{StoryEffects, TaskEffects},
     grpc::Gsdx,
     proto::{GSDX_V1_FILE_DESCRIPTOR_SET, gsdx_service_server::GsdxServiceServer},
     repo::Repo,
@@ -43,12 +44,12 @@ impl Server {
 
         // Setup the GSDX service with gzip compression.
         let repo = Arc::new(Repo::new(self.pool.clone()));
-        let gsdx_service = GsdxServiceServer::new(Gsdx::new(
-            StoryService::new(repo.clone()),
-            TaskService::new(repo),
-        ))
-        .send_compressed(Gzip)
-        .accept_compressed(Gzip);
+        let story_effects: Box<dyn StoryEffects> = Box::new(StoryService::new(repo.clone()));
+        let task_effects: Box<dyn TaskEffects> = Box::new(TaskService::new(repo));
+        let gsdx_service =
+            GsdxServiceServer::new(Gsdx::new(Arc::new(story_effects), Arc::new(task_effects)))
+                .send_compressed(Gzip)
+                .accept_compressed(Gzip);
 
         // Serve gRPC services
         log::info!("Server listening on {}", grpc_listen_addr);

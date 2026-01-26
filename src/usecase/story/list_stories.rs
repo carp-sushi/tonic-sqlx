@@ -1,4 +1,9 @@
-use crate::{Result, domain::Story, repo::Repo, usecase::UseCase};
+use crate::{
+    Result,
+    domain::{Cursor, PageParams, Story},
+    repo::Repo,
+    usecase::UseCase,
+};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -16,8 +21,8 @@ impl ListStories {
 
 #[async_trait]
 impl UseCase for ListStories {
-    type Req = (i64, i64);
-    type Rep = Result<(i64, Vec<Story>)>;
+    type Req = PageParams;
+    type Rep = Result<(Cursor, Vec<Story>)>;
     async fn execute(&self, req: Self::Req) -> Self::Rep {
         let (cursor, limit) = req;
         self.repo.list_stories(cursor, limit).await

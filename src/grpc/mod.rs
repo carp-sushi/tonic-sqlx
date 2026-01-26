@@ -1,5 +1,5 @@
 use crate::{
-    domain::Status,
+    domain::{Status, StoryEffects, TaskEffects},
     proto::gsdx_service_server::GsdxService,
     proto::{
         CreateStoryRequest, CreateStoryResponse, CreateTaskRequest, CreateTaskResponse,
@@ -8,8 +8,8 @@ use crate::{
         TaskData, TaskStatus, UpdateStoryRequest, UpdateStoryResponse, UpdateTaskRequest,
         UpdateTaskResponse,
     },
-    service::{StoryService, TaskService},
 };
+use std::sync::Arc;
 use tonic::{Request, Response, Status as GrpcStatus};
 
 // Conversions between grpc and domain types.
@@ -17,23 +17,23 @@ mod adapter;
 
 // Stateless validation utility functions.
 mod validate;
-use validate::{
-    clamp_page_bounds, validate_optional_string_length, validate_story_id, validate_string_length,
-    validate_task_id,
-};
+use validate::{NameValidator, clamp_page_bounds, validate_story_id, validate_task_id};
 
 /// GSDX gRPC implementation.
 pub struct Gsdx {
-    story_service: StoryService,
-    task_service: TaskService,
+    story_effects: Arc<Box<dyn StoryEffects>>,
+    task_effects: Arc<Box<dyn TaskEffects>>,
 }
 
 impl Gsdx {
     /// Constructor
-    pub fn new(story_service: StoryService, task_service: TaskService) -> Self {
+    pub fn new(
+        story_effects: Arc<Box<dyn StoryEffects>>,
+        task_effects: Arc<Box<dyn TaskEffects>>,
+    ) -> Self {
         Self {
-            story_service,
-            task_service,
+            story_effects,
+            task_effects,
         }
     }
 }
@@ -46,9 +46,9 @@ impl GsdxService for Gsdx {
         request: Request<CreateStoryRequest>,
     ) -> Result<Response<CreateStoryResponse>, GrpcStatus> {
         log::debug!("Create story");
-        let request = request.get_ref();
-        let name = validate_string_length(&request.name, "name")?;
-        let story = self.story_service.create_story(name).await?;
+        let request = request.into_inner();
+        let name = NameValidator::validate(request.name)?;
+        let story = self.story_effects.create_story(name).await?;
         Ok(Response::new(CreateStoryResponse {
             story: Some(StoryData::from(story)),
         }))
@@ -62,7 +62,7 @@ impl GsdxService for Gsdx {
         log::debug!("Delete story");
         let request = request.get_ref();
         let story_id = validate_story_id(&request.story_id)?;
-        self.story_service.delete_story(story_id).await?;
+        self.story_effects.delete_story(story_id).await?;
         Ok(Response::new(DeleteStoryResponse {}))
     }
 
@@ -74,7 +74,7 @@ impl GsdxService for Gsdx {
         log::debug!("List stories");
         let request = request.get_ref();
         let page_params = clamp_page_bounds(request.cursor, request.limit);
-        let (next_cursor, stories) = self.story_service.list_stories(page_params).await?;
+        let (next_cursor, stories) = self.story_effects.list_stories(page_params).await?;
         Ok(Response::new(ListStoriesResponse {
             next_cursor,
             stories: stories.into_iter().map(StoryData::from).collect(),
@@ -89,8 +89,8 @@ impl GsdxService for Gsdx {
         log::debug!("Update story");
         let request = request.get_ref();
         let story_id = validate_story_id(&request.story_id)?;
-        let name = validate_string_length(&request.name, "name")?;
-        let story = self.story_service.update_story(story_id, name).await?;
+        let name = NameValidator::validate(&request.name)?;
+        let story = self.story_effects.update_story(story_id, name).await?;
         Ok(Response::new(UpdateStoryResponse {
             story: Some(StoryData::from(story)),
         }))
@@ -104,7 +104,7 @@ impl GsdxService for Gsdx {
         log::debug!("List tasks");
         let request = request.get_ref();
         let story_id = validate_story_id(&request.story_id)?;
-        let tasks = self.task_service.list_tasks(story_id).await?;
+        let tasks = self.task_effects.list_tasks(story_id).await?;
         Ok(Response::new(ListTasksResponse {
             tasks: tasks.into_iter().map(TaskData::from).collect(),
         }))
@@ -118,11 +118,11 @@ impl GsdxService for Gsdx {
         log::debug!("Create task");
         let request = request.get_ref();
         let story_id = validate_story_id(&request.story_id)?;
-        let name = validate_string_length(&request.name, "name")?;
+        let name = NameValidator::validate(&request.name)?;
         let task_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
         let status = Status::from(task_status);
         let task = self
-            .task_service
+            .task_effects
             .create_task(story_id, name, status)
             .await?;
         Ok(Response::new(CreateTaskResponse {
@@ -138,7 +138,7 @@ impl GsdxService for Gsdx {
         log::debug!("Delete task");
         let request = request.get_ref();
         let task_id = validate_task_id(&request.task_id)?;
-        self.task_service.delete_task(task_id).await?;
+        self.task_effects.delete_task(task_id).await?;
         Ok(Response::new(DeleteTaskResponse {}))
     }
 
@@ -150,11 +150,11 @@ impl GsdxService for Gsdx {
         log::debug!("Update task");
         let request = request.into_inner();
         let task_id = validate_task_id(&request.task_id)?;
-        let maybe_name = validate_optional_string_length(request.name, "name")?;
+        let maybe_name = NameValidator::validate_optional(request.name)?;
         let task_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
         let status = Status::from(task_status);
         let task = self
-            .task_service
+            .task_effects
             .update_task(task_id, maybe_name, status)
             .await?;
         Ok(Response::new(UpdateTaskResponse {
