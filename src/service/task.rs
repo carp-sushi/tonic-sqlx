@@ -3,10 +3,9 @@ use crate::{
     domain::{Status, StoryId, Task, TaskId},
     effect::TaskEffects,
     repo::Repo,
-    usecase::UseCase,
-    usecase::task::{CreateTask, DeleteTask, ListTasks, UpdateTask},
 };
 use async_trait::async_trait;
+use futures_util::TryFutureExt;
 use std::sync::Arc;
 
 /// Task service
@@ -25,30 +24,38 @@ impl TaskService {
 impl TaskEffects for TaskService {
     /// Fetch all tasks for a story
     async fn list_tasks(&self, story_id: StoryId) -> Result<Vec<Task>> {
-        ListTasks::new(self.repo.clone()).execute(story_id).await
+        self.repo
+            .fetch_story(&story_id)
+            .and_then(|_| self.repo.list_tasks(&story_id))
+            .await
     }
 
     /// Create a new task
     async fn create_task(&self, story_id: StoryId, name: String, status: Status) -> Result<Task> {
-        CreateTask::new(self.repo.clone())
-            .execute(CreateTask::args(story_id, name, status))
-            .await
+        self.repo.create_task(&story_id, name, status).await
     }
 
     /// Update an existing task
     async fn update_task(
         &self,
         task_id: TaskId,
-        name: Option<String>,
+        maybe_name: Option<String>,
         status: Status,
     ) -> Result<Task> {
-        UpdateTask::new(self.repo.clone())
-            .execute(UpdateTask::args(task_id, name, status))
+        self.repo
+            .fetch_task(&task_id)
+            .and_then(|t| {
+                let name = maybe_name.unwrap_or(t.name);
+                self.repo.update_task(&task_id, name, status)
+            })
             .await
     }
 
     /// Delete an existing task.
     async fn delete_task(&self, task_id: TaskId) -> Result<()> {
-        DeleteTask::new(self.repo.clone()).execute(task_id).await
+        self.repo
+            .fetch_task(&task_id)
+            .and_then(|_| self.repo.delete_task(&task_id))
+            .await
     }
 }

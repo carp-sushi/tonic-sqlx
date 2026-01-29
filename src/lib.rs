@@ -38,9 +38,6 @@ pub mod server;
 /// gRPC implementation layer.
 pub mod grpc;
 
-/// Business logic.
-pub mod usecase;
-
 /// Export error type
 pub use error::Error;
 
