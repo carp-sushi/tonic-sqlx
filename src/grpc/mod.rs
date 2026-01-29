@@ -1,5 +1,6 @@
 use crate::{
-    domain::{Status, StoryEffects, TaskEffects},
+    domain::Status,
+    effect::{StoryEffects, TaskEffects},
     proto::gsdx_service_server::GsdxService,
     proto::{
         CreateStoryRequest, CreateStoryResponse, CreateTaskRequest, CreateTaskResponse,

@@ -23,6 +23,9 @@ pub mod service;
 /// Domain models.
 pub mod domain;
 
+/// Side effects
+pub mod effect;
+
 /// Project errors.
 pub mod error;
 

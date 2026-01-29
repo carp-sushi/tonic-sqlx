@@ -1,5 +1,5 @@
 use crate::{
-    domain::{StoryEffects, TaskEffects},
+    effect::{StoryEffects, TaskEffects},
     grpc::Gsdx,
     proto::{GSDX_V1_FILE_DESCRIPTOR_SET, gsdx_service_server::GsdxServiceServer},
     repo::Repo,

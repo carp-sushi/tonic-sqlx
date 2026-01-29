@@ -1,7 +1,7 @@
 use crate::{
     Result,
-    domain::TaskEffects,
     domain::{Status, StoryId, Task, TaskId},
+    effect::TaskEffects,
     repo::Repo,
     usecase::UseCase,
     usecase::task::{CreateTask, DeleteTask, ListTasks, UpdateTask},

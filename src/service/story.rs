@@ -1,6 +1,7 @@
 use crate::{
     Result,
-    domain::{Cursor, PageParams, Story, StoryEffects, StoryId},
+    domain::{Cursor, PageParams, Story, StoryId},
+    effect::StoryEffects,
     repo::Repo,
     usecase::UseCase,
     usecase::story::{CreateStory, DeleteStory, ListStories, UpdateStory},
