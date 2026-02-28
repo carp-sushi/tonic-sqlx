@@ -28,10 +28,7 @@ pub struct Gsdx {
 
 impl Gsdx {
     /// Constructor
-    pub fn new(
-        story_effects: Arc<dyn StoryEffects>,
-        task_effects: Arc<dyn TaskEffects>,
-    ) -> Self {
+    pub fn new(story_effects: Arc<dyn StoryEffects>, task_effects: Arc<dyn TaskEffects>) -> Self {
         Self {
             story_effects,
             task_effects,

@@ -44,10 +44,9 @@ impl Server {
         let repo = Arc::new(Repo::new(self.pool.clone()));
         let story_effects: Arc<dyn StoryEffects> = Arc::new(StoryService::new(repo.clone()));
         let task_effects: Arc<dyn TaskEffects> = Arc::new(TaskService::new(repo));
-        let gsdx_service =
-            GsdxServiceServer::new(Gsdx::new(story_effects, task_effects))
-                .send_compressed(Gzip)
-                .accept_compressed(Gzip);
+        let gsdx_service = GsdxServiceServer::new(Gsdx::new(story_effects, task_effects))
+            .send_compressed(Gzip)
+            .accept_compressed(Gzip);
 
         // Serve gRPC services
         log::info!("Server listening on {}", grpc_listen_addr);
