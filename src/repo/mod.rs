@@ -1,24 +1,23 @@
 use crate::Error;
 use sqlx::postgres::PgPool;
-use std::sync::Arc;
 
 mod story;
 mod task;
 
 /// Database abstraction layer.
 pub struct Repo {
-    db: Arc<PgPool>,
+    db: PgPool,
 }
 
 impl Repo {
     /// Constructor
-    pub fn new(db: Arc<PgPool>) -> Self {
+    pub fn new(db: PgPool) -> Self {
         Self { db }
     }
 
     /// Get a ref to the connection pool.
     fn db_ref(&self) -> &PgPool {
-        self.db.as_ref()
+        &self.db
     }
 }
 
@@ -39,13 +38,13 @@ mod tests {
         migrate::Migrator,
         postgres::{PgPool, PgPoolOptions},
     };
-    use std::{path::Path, sync::Arc};
+    use std::path::Path;
 
     use testcontainers::ContainerAsync as Container;
     use testcontainers_modules::postgres::Postgres;
 
     /// Given a running Postgres container, set up a connection pool and run migrations.
-    pub async fn setup_pg_pool(container: &Container<Postgres>) -> Arc<PgPool> {
+    pub async fn setup_pg_pool(container: &Container<Postgres>) -> PgPool {
         let connection_string = &format!(
             "postgres://postgres:postgres@localhost:{}/postgres",
             container.get_host_port_ipv4(5432).await.unwrap(),
@@ -61,6 +60,6 @@ mod tests {
         let m = Migrator::new(Path::new("./migrations")).await.unwrap();
         m.run(&pool).await.unwrap();
 
-        Arc::new(pool)
+        pool
     }
 }

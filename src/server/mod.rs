@@ -15,15 +15,13 @@ use health::health_check;
 
 // The GSDX gRPC server
 pub struct Server {
-    pool: Arc<PgPool>,
+    pool: PgPool,
 }
 
 impl Server {
     /// Create a new server
     pub fn new(pool: PgPool) -> Self {
-        Self {
-            pool: Arc::new(pool),
-        }
+        Self { pool }
     }
 }
 
@@ -44,10 +42,10 @@ impl Server {
 
         // Setup the GSDX service with gzip compression.
         let repo = Arc::new(Repo::new(self.pool.clone()));
-        let story_effects: Box<dyn StoryEffects> = Box::new(StoryService::new(repo.clone()));
-        let task_effects: Box<dyn TaskEffects> = Box::new(TaskService::new(repo));
+        let story_effects: Arc<dyn StoryEffects> = Arc::new(StoryService::new(repo.clone()));
+        let task_effects: Arc<dyn TaskEffects> = Arc::new(TaskService::new(repo));
         let gsdx_service =
-            GsdxServiceServer::new(Gsdx::new(Arc::new(story_effects), Arc::new(task_effects)))
+            GsdxServiceServer::new(Gsdx::new(story_effects, task_effects))
                 .send_compressed(Gzip)
                 .accept_compressed(Gzip);
 

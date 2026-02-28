@@ -22,15 +22,15 @@ use validate::{NameValidator, clamp_page_bounds, validate_story_id, validate_tas
 
 /// GSDX gRPC implementation.
 pub struct Gsdx {
-    story_effects: Arc<Box<dyn StoryEffects>>,
-    task_effects: Arc<Box<dyn TaskEffects>>,
+    story_effects: Arc<dyn StoryEffects>,
+    task_effects: Arc<dyn TaskEffects>,
 }
 
 impl Gsdx {
     /// Constructor
     pub fn new(
-        story_effects: Arc<Box<dyn StoryEffects>>,
-        task_effects: Arc<Box<dyn TaskEffects>>,
+        story_effects: Arc<dyn StoryEffects>,
+        task_effects: Arc<dyn TaskEffects>,
     ) -> Self {
         Self {
             story_effects,

@@ -116,8 +116,6 @@ mod tests {
         domain::Status,
         repo::{Repo, tests},
     };
-    use std::sync::Arc;
-
     use testcontainers::{ImageExt, runners::AsyncRunner};
     use testcontainers_modules::postgres::Postgres;
 
@@ -128,7 +126,7 @@ mod tests {
         let image = Postgres::default().with_tag("17-alpine");
         let container = image.start().await.unwrap();
         let pool = tests::setup_pg_pool(&container).await;
-        let repo = Repo::new(Arc::clone(&pool));
+        let repo = Repo::new(pool);
 
         // Set up a story to put tasks under
         let story = repo.create_story("Books To Read").await.unwrap();
