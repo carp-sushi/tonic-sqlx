@@ -5,7 +5,7 @@ use std::sync::Arc;
 impl Config {
     /// Create a new database connection pool options for postgres.
     pub fn db_pool_opts(&self) -> PgPoolOptions {
-        let schema = Arc::new(self.db_schema.clone());
+        let schema: Arc<str> = self.db_schema.as_str().into();
         PgPoolOptions::new()
             .max_connections(self.db_max_connections)
             .after_connect(move |conn, _meta| {

@@ -8,30 +8,21 @@ const MAX_STR_LEN: usize = 1000;
 const MIN_PAGE_LIMIT: i64 = 10;
 const MAX_PAGE_LIMIT: i64 = 100;
 
-/// Common validator for story and task names.
-pub struct NameValidator;
-
-impl NameValidator {
-    /// Validates name length (0 < name.len() < 1000).
-    pub fn validate<S: Into<String>>(name: S) -> Result<String> {
-        let name = name.into().trim().to_string();
-        if name.is_empty() {
-            return Err(Error::invalid_args("name cannot be empty"));
-        }
-        if name.len() > MAX_STR_LEN {
-            return Err(Error::invalid_args("name is too long"));
-        }
-        Ok(name)
+/// Validates name length (0 < name.len() < 1000).
+pub fn validate_name<S: Into<String>>(name: S) -> Result<String> {
+    let name = name.into().trim().to_string();
+    if name.is_empty() {
+        return Err(Error::invalid_args("name cannot be empty"));
     }
-
-    /// Validates an optional name if provided.
-    pub fn validate_optional<S: Into<String>>(maybe_name: Option<S>) -> Result<Option<String>> {
-        if let Some(name) = maybe_name {
-            let validated_name = NameValidator::validate(name)?;
-            return Ok(Some(validated_name));
-        }
-        Ok(None)
+    if name.len() > MAX_STR_LEN {
+        return Err(Error::invalid_args("name is too long"));
     }
+    Ok(name)
+}
+
+/// Validates an optional name if provided.
+pub fn validate_optional_name<S: Into<String>>(maybe_name: Option<S>) -> Result<Option<String>> {
+    maybe_name.map(validate_name).transpose()
 }
 
 /// Ensure a story id value can be created from a string
@@ -48,8 +39,7 @@ pub(crate) fn validate_task_id(input: &str) -> Result<TaskId> {
 
 /// Ensure a uuid value can be created from a string
 fn validate_uuid(value: &str) -> Result<Uuid> {
-    let value = value.trim().to_lowercase();
-    let uuid = Uuid::parse_str(&value).map_err(|err| Error::invalid_args(err.to_string()))?;
+    let uuid = Uuid::parse_str(value.trim()).map_err(|err| Error::invalid_args(err.to_string()))?;
     Ok(uuid)
 }
 
@@ -66,21 +56,21 @@ mod tests {
 
     #[test]
     fn validate_string_success() {
-        let result = NameValidator::validate(" test ").unwrap();
+        let result = validate_name(" test ").unwrap();
         assert_eq!(result, "test");
     }
 
     #[test]
     fn whitespace_only_fail() {
-        assert!(NameValidator::validate("  ").is_err());
-        assert!(NameValidator::validate("\t\t").is_err());
-        assert!(NameValidator::validate("\n\n").is_err());
+        assert!(validate_name("  ").is_err());
+        assert!(validate_name("\t\t").is_err());
+        assert!(validate_name("\n\n").is_err());
     }
 
     #[test]
     fn max_len_fail() {
         let input = "0123456789!".repeat(100);
-        assert!(NameValidator::validate(&input).is_err());
+        assert!(validate_name(&input).is_err());
     }
 
     #[test]

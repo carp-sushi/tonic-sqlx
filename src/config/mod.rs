@@ -28,7 +28,7 @@ impl Config {
                 .expect("DATABASE_MAX_CONNECTIONS could not be parsed")
         }
         let db_url = env::var("DATABASE_URL").expect("DATABASE_URL not set");
-        let db_schema = env::var("DATABASE_SCHEMA").unwrap_or("public".to_string());
+        let db_schema = env::var("DATABASE_SCHEMA").unwrap_or_else(|_| "public".into());
 
         // Create config
         Self {

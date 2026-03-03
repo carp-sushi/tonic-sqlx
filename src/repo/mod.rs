@@ -23,11 +23,11 @@ impl Repo {
 
 impl From<sqlx::Error> for Error {
     fn from(err: sqlx::Error) -> Self {
-        let errs = err.to_string();
+        let msg = err.to_string();
         match err {
-            sqlx::Error::InvalidArgument(errs) => Error::invalid_args(errs),
-            sqlx::Error::RowNotFound => Error::not_found(errs),
-            _ => Error::internal(errs),
+            sqlx::Error::InvalidArgument(inner) => Error::invalid_args(inner),
+            sqlx::Error::RowNotFound => Error::not_found(msg),
+            _ => Error::internal(msg),
         }
     }
 }

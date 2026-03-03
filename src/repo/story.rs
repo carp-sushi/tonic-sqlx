@@ -37,10 +37,11 @@ impl Repo {
             "SELECT id, name, seqno, created_at, updated_at FROM stories WHERE id = $1",
             story_id
         );
-        match query.fetch_optional(self.db_ref()).await? {
-            Some(entity) => Ok(Story::from(entity)),
-            None => Err(Error::not_found(format!("story not found: {story_id}"))),
-        }
+        query
+            .fetch_optional(self.db_ref())
+            .await?
+            .map(Story::from)
+            .ok_or_else(|| Error::not_found(format!("story not found: {story_id}")))
     }
 
     /// Select a page of stories.

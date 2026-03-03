@@ -18,7 +18,9 @@ mod adapter;
 
 // Stateless validation utility functions.
 mod validate;
-use validate::{NameValidator, clamp_page_bounds, validate_story_id, validate_task_id};
+use validate::{
+    clamp_page_bounds, validate_name, validate_optional_name, validate_story_id, validate_task_id,
+};
 
 /// GSDX gRPC implementation.
 pub struct Gsdx {
@@ -45,7 +47,7 @@ impl GsdxService for Gsdx {
     ) -> Result<Response<CreateStoryResponse>, GrpcStatus> {
         log::debug!("Create story");
         let request = request.into_inner();
-        let name = NameValidator::validate(request.name)?;
+        let name = validate_name(request.name)?;
         let story = self.story_effects.create_story(name).await?;
         Ok(Response::new(CreateStoryResponse {
             story: Some(StoryData::from(story)),
@@ -87,7 +89,7 @@ impl GsdxService for Gsdx {
         log::debug!("Update story");
         let request = request.get_ref();
         let story_id = validate_story_id(&request.story_id)?;
-        let name = NameValidator::validate(&request.name)?;
+        let name = validate_name(&request.name)?;
         let story = self.story_effects.update_story(story_id, name).await?;
         Ok(Response::new(UpdateStoryResponse {
             story: Some(StoryData::from(story)),
@@ -116,7 +118,7 @@ impl GsdxService for Gsdx {
         log::debug!("Create task");
         let request = request.get_ref();
         let story_id = validate_story_id(&request.story_id)?;
-        let name = NameValidator::validate(&request.name)?;
+        let name = validate_name(&request.name)?;
         let task_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
         let status = Status::from(task_status);
         let task = self
@@ -148,7 +150,7 @@ impl GsdxService for Gsdx {
         log::debug!("Update task");
         let request = request.into_inner();
         let task_id = validate_task_id(&request.task_id)?;
-        let maybe_name = NameValidator::validate_optional(request.name)?;
+        let maybe_name = validate_optional_name(request.name)?;
         let task_status = TaskStatus::try_from(request.status).unwrap_or(TaskStatus::Unspecified);
         let status = Status::from(task_status);
         let task = self

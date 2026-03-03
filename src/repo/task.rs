@@ -44,10 +44,11 @@ impl Repo {
             "SELECT id, story_id, name, status, created_at, updated_at FROM tasks WHERE id = $1",
             task_id,
         );
-        match query.fetch_optional(self.db_ref()).await? {
-            Some(entity) => Ok(Task::from(entity)),
-            None => Err(Error::not_found(format!("task not found: {task_id}"))),
-        }
+        query
+            .fetch_optional(self.db_ref())
+            .await?
+            .map(Task::from)
+            .ok_or_else(|| Error::not_found(format!("task not found: {task_id}")))
     }
 
     /// Select tasks for a story
