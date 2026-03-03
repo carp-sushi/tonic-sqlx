@@ -11,12 +11,16 @@ GSDX is a Rust gRPC service for managing stories and tasks with PostgreSQL persi
 ```bash
 make all          # Full check: format, build, test, lint
 make fmt          # Format code (cargo fmt) and proto files (buf format)
+make check        # Quick compilation check (cargo check)
 make build        # Build the project
 make test         # Run unit tests
 make itest        # Run integration tests (requires Docker)
 make lint         # Lint code (clippy) and proto files (buf lint)
 make run          # Start the server (cargo run -- server)
 make migrate      # Run database migrations (cargo run -- migrate)
+make release      # Build optimized release binary (thin LTO, single codegen unit)
+make run-ui       # Launch grpcUI for interactive testing
+make clean        # Clean build artifacts
 ```
 
 Run a single test: `cargo test <test_name>`
@@ -33,7 +37,7 @@ gRPC (src/grpc/)  →  Effect traits (src/effect/)  ←  Service (src/service/) 
 ### Layer Responsibilities
 
 - **`grpc/`**: Implements `GsdxService` (tonic). Handles request validation (`validate.rs`), type conversion between proto and domain types (`adapter.rs`). Depends on effect traits, not concrete services.
-- **`effect/`**: Async trait definitions (`StoryEffects`, `TaskEffects`) that abstract side effects. This is the boundary between the gRPC layer and business logic — the gRPC layer holds `Arc<Box<dyn StoryEffects>>` and `Arc<Box<dyn TaskEffects>>`.
+- **`effect/`**: Async trait definitions (`StoryEffects`, `TaskEffects`) that abstract side effects. This is the boundary between the gRPC layer and business logic — the gRPC layer holds `Arc<dyn StoryEffects>` and `Arc<dyn TaskEffects>`.
 - **`service/`**: `StoryService` and `TaskService` implement the effect traits. Contains business logic (e.g., skip update if name unchanged, verify entity exists before delete/update).
 - **`repo/`**: `Repo` struct with `sqlx::query_as!` macros against PostgreSQL. Uses private `*Entity` structs for DB mapping, converts to domain types in public methods. Story deletion cascades to tasks via transaction.
 - **`domain/`**: Pure data types (`Story`, `Task`, `Status`) with newtype wrappers for IDs (`StoryId`, `TaskId`). No business logic beyond `Status` serialization via strum.
@@ -45,10 +49,12 @@ gRPC (src/grpc/)  →  Effect traits (src/effect/)  ←  Service (src/service/) 
 - **Compile-time query checking**: `sqlx::query_as!` validates SQL at compile time. Set `SQLX_OFFLINE=true` to skip when no DB is available.
 - **Cursor-based pagination**: Stories use `seqno`-based cursors with clamped page bounds (10–100).
 - **Clippy strictness**: `lib.rs` forbids unsafe code and denies `unwrap_used`, `print_stdout/stderr`, `exit`, and `wildcard_imports`.
+- **Custom allocator**: Uses `mimalloc` globally for better performance than the system allocator.
+- **Health checks**: Background task pings the DB every 2 seconds, updates gRPC health status (`server/health.rs`).
 
 ### Error Handling
 
-`Error` enum (thiserror) maps to gRPC status: `NotFound` → `not_found`, `InvalidArgs` → `invalid_argument`, `Internal` → `internal`. The `From<Error> for GrpcStatus` impl lives in `grpc/adapter.rs`. The `From<sqlx::Error> for Error` impl lives in `repo/mod.rs`.
+`Error` enum (thiserror) maps to gRPC status: `NotFound` → `not_found`, `InvalidArgs` → `invalid_argument`, `Internal` → `internal`. `InvalidArgs` holds `Vec<String>` to accumulate multiple validation errors. The `From<Error> for GrpcStatus` impl lives in `grpc/adapter.rs`. The `From<sqlx::Error> for Error` impl lives in `repo/mod.rs`.
 
 ## Testing
 
