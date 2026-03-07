@@ -1,1 +1,1 @@
-drop table if exists audits;
+drop table if exists audits cascade;
