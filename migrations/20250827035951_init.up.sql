@@ -67,15 +67,16 @@ begin
   table_name := table_and_columns[1];
   columns := table_and_columns[2:];
 
-  column_list := array_to_string(columns, ', ');
+  column_list := (select string_agg(format('%I', col), ', ')
+    from unnest(columns) as col);
   column_condition := (select string_agg(x.y, ' OR ')
-    from (select '(OLD.' || col || ' IS DISTINCT FROM NEW.' || col || ')' as y
+    from (select format('(OLD.%I IS DISTINCT FROM NEW.%I)', col, col) as y
     from unnest(columns) as col) as x);
 
   execute format(
-    'CREATE OR REPLACE TRIGGER %s_immutable_columns
+    'CREATE OR REPLACE TRIGGER %I_immutable_columns
       AFTER UPDATE OF %s
-      ON %s
+      ON %I
       FOR EACH ROW
       WHEN (%s)
       EXECUTE FUNCTION raise_immutability_exception ();'
@@ -100,10 +101,9 @@ end $$
 language plpgsql;
 
 create or replace function
-  set_undeleteable_table (table_name text)
+  set_undeletable_table (table_name text)
   returns void as $$
 begin
     execute format('CREATE OR REPLACE TRIGGER %I_undeleteable_table AFTER DELETE ON %I FOR EACH STATEMENT EXECUTE FUNCTION raise_undeletable_table_exception();', table_name, table_name);
 end $$
 language plpgsql;
-

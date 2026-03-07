@@ -9,7 +9,7 @@ const MIN_PAGE_LIMIT: i64 = 10;
 const MAX_PAGE_LIMIT: i64 = 100;
 
 /// Validates name length (0 < name.len() < 1000).
-pub fn validate_name<S: Into<String>>(name: S) -> Result<String> {
+pub(crate) fn validate_name<S: Into<String>>(name: S) -> Result<String> {
     let name = name.into().trim().to_string();
     if name.is_empty() {
         return Err(Error::invalid_args("name cannot be empty"));
@@ -21,7 +21,9 @@ pub fn validate_name<S: Into<String>>(name: S) -> Result<String> {
 }
 
 /// Validates an optional name if provided.
-pub fn validate_optional_name<S: Into<String>>(maybe_name: Option<S>) -> Result<Option<String>> {
+pub(crate) fn validate_optional_name<S: Into<String>>(
+    maybe_name: Option<S>,
+) -> Result<Option<String>> {
     maybe_name.map(validate_name).transpose()
 }
 
@@ -44,7 +46,7 @@ fn validate_uuid(value: &str) -> Result<Uuid> {
 }
 
 /// Ensure a paging params are within reasonable bounds.
-pub fn clamp_page_bounds(cursor: i64, limit: i64) -> (i64, i64) {
+pub(crate) fn clamp_page_bounds(cursor: i64, limit: i64) -> (i64, i64) {
     let cursor = cursor.clamp(1, i64::MAX);
     let limit = limit.clamp(MIN_PAGE_LIMIT, MAX_PAGE_LIMIT);
     (cursor, limit)

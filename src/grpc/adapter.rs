@@ -27,8 +27,8 @@ impl From<Story> for StoryData {
         Self {
             story_id: story_id.to_string(),
             name: story.name,
-            created_at: mk_prost_ts(story.created_at),
-            updated_at: mk_prost_ts(story.updated_at),
+            created_at: to_timestamp(story.created_at),
+            updated_at: to_timestamp(story.updated_at),
         }
     }
 }
@@ -64,14 +64,14 @@ impl From<Task> for TaskData {
             story_id: task.story_id.to_string(),
             name: task.name,
             status,
-            created_at: mk_prost_ts(task.created_at),
-            updated_at: mk_prost_ts(task.updated_at),
+            created_at: to_timestamp(task.created_at),
+            updated_at: to_timestamp(task.updated_at),
         }
     }
 }
 
 /// Convert a domain timestamp to a gRPC timestamp.
-pub fn mk_prost_ts(dt: DateTime<Utc>) -> Option<Timestamp> {
+fn to_timestamp(dt: DateTime<Utc>) -> Option<Timestamp> {
     Some(Timestamp {
         seconds: dt.timestamp(),
         nanos: dt.timestamp_subsec_nanos() as i32,

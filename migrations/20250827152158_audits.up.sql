@@ -6,7 +6,7 @@ create table audits (
   audit_ts timestamptz not null default now()
 );
 
-select set_undeleteable_table('audits');
+select set_undeletable_table('audits');
 
 select set_immutable_columns(
   'audits', 'id', 'audit_actor', 'audit_action', 'audit_location', 'audit_ts'

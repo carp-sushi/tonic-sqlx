@@ -1,2 +1,2 @@
 
-drop table if exists stories;
+drop table if exists stories cascade;
