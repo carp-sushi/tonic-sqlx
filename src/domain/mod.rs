@@ -12,5 +12,8 @@ pub type Cursor = i64;
 /// Type alias for page size limit
 pub type Limit = i64;
 
-/// Type for page paramaters (for readability)
+/// Type alias for page parameters
 pub type PageParams = (Cursor, Limit);
+
+/// Type alias for page of stories
+pub type StoryPage = (Cursor, Vec<Story>);

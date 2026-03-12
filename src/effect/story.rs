@@ -1,6 +1,6 @@
 use crate::{
     Result,
-    domain::{Cursor, PageParams, Story, StoryId},
+    domain::{PageParams, Story, StoryId, StoryPage},
 };
 use async_trait::async_trait;
 
@@ -8,14 +8,14 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait StoryEffects: Send + Sync {
     /// Create a new story
-    async fn create_story(&self, name: String) -> Result<Story>;
+    async fn create(&self, name: String) -> Result<Story>;
 
     /// Fetch a page of stories
-    async fn list_stories(&self, page_params: PageParams) -> Result<(Cursor, Vec<Story>)>;
+    async fn list(&self, page_params: PageParams) -> Result<StoryPage>;
 
     /// Update an existing story
-    async fn update_story(&self, story_id: StoryId, name: String) -> Result<Story>;
+    async fn update(&self, story_id: StoryId, name: String) -> Result<Story>;
 
     /// Delete an existing story
-    async fn delete_story(&self, story_id: StoryId) -> Result<()>;
+    async fn delete(&self, story_id: StoryId) -> Result<()>;
 }

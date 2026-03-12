@@ -23,7 +23,7 @@ impl TaskService {
 #[async_trait]
 impl TaskEffects for TaskService {
     /// Fetch all tasks for a story
-    async fn list_tasks(&self, story_id: StoryId) -> Result<Vec<Task>> {
+    async fn list(&self, story_id: StoryId) -> Result<Vec<Task>> {
         self.repo
             .fetch_story(&story_id)
             .and_then(|_| self.repo.list_tasks(&story_id))
@@ -31,12 +31,12 @@ impl TaskEffects for TaskService {
     }
 
     /// Create a new task
-    async fn create_task(&self, story_id: StoryId, name: String, status: Status) -> Result<Task> {
+    async fn create(&self, story_id: StoryId, name: String, status: Status) -> Result<Task> {
         self.repo.create_task(&story_id, name, status).await
     }
 
     /// Update an existing task
-    async fn update_task(
+    async fn update(
         &self,
         task_id: TaskId,
         maybe_name: Option<String>,
@@ -52,7 +52,7 @@ impl TaskEffects for TaskService {
     }
 
     /// Delete an existing task.
-    async fn delete_task(&self, task_id: TaskId) -> Result<()> {
+    async fn delete(&self, task_id: TaskId) -> Result<()> {
         self.repo
             .fetch_task(&task_id)
             .and_then(|_| self.repo.delete_task(&task_id))

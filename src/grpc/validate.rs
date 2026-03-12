@@ -1,6 +1,6 @@
 use crate::{
     Error, Result,
-    domain::{StoryId, TaskId},
+    domain::{PageParams, StoryId, TaskId},
 };
 use uuid::Uuid;
 
@@ -46,7 +46,7 @@ fn validate_uuid(value: &str) -> Result<Uuid> {
 }
 
 /// Ensure a paging params are within reasonable bounds.
-pub(crate) fn clamp_page_bounds(cursor: i64, limit: i64) -> (i64, i64) {
+pub(crate) fn clamp_page_bounds(cursor: i64, limit: i64) -> PageParams {
     let cursor = cursor.clamp(1, i64::MAX);
     let limit = limit.clamp(MIN_PAGE_LIMIT, MAX_PAGE_LIMIT);
     (cursor, limit)

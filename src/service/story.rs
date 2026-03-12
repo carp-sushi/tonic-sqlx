@@ -1,6 +1,6 @@
 use crate::{
     Result,
-    domain::{Cursor, PageParams, Story, StoryId},
+    domain::{PageParams, Story, StoryId, StoryPage},
     effect::StoryEffects,
     repo::Repo,
 };
@@ -23,17 +23,17 @@ impl StoryService {
 #[async_trait]
 impl StoryEffects for StoryService {
     /// Fetch a page of stories
-    async fn list_stories(&self, (cursor, limit): PageParams) -> Result<(Cursor, Vec<Story>)> {
+    async fn list(&self, (cursor, limit): PageParams) -> Result<StoryPage> {
         self.repo.list_stories(cursor, limit).await
     }
 
     /// Create a new story
-    async fn create_story(&self, name: String) -> Result<Story> {
+    async fn create(&self, name: String) -> Result<Story> {
         self.repo.create_story(name).await
     }
 
     /// Update an existing story
-    async fn update_story(&self, story_id: StoryId, name: String) -> Result<Story> {
+    async fn update(&self, story_id: StoryId, name: String) -> Result<Story> {
         self.repo
             .fetch_story(&story_id)
             .and_then(async |s| {
@@ -49,7 +49,7 @@ impl StoryEffects for StoryService {
     }
 
     /// Delete an existing story
-    async fn delete_story(&self, story_id: StoryId) -> Result<()> {
+    async fn delete(&self, story_id: StoryId) -> Result<()> {
         self.repo
             .fetch_story(&story_id)
             .and_then(|_| self.repo.delete_story(&story_id))
