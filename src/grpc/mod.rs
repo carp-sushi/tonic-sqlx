@@ -1,5 +1,5 @@
 use crate::{
-    domain::Status,
+    domain::{Status, StoryPage},
     effect::{StoryEffects, TaskEffects},
     proto::gsdx_service_server::GsdxService,
     proto::{
@@ -74,7 +74,7 @@ where
         log::debug!("List stories");
         let request = request.get_ref();
         let page_params = clamp_page_bounds(request.cursor, request.limit);
-        let (next_cursor, stories) = self.stories.list(page_params).await?;
+        let StoryPage(next_cursor, stories) = self.stories.list(page_params).await?;
         Ok(Response::new(ListStoriesResponse {
             next_cursor,
             stories: stories.into_iter().map(StoryData::from).collect(),

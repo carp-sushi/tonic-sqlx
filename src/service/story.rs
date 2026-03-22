@@ -23,8 +23,8 @@ impl StoryService {
 #[async_trait]
 impl StoryEffects for StoryService {
     /// Fetch a page of stories
-    async fn list(&self, (cursor, limit): PageParams) -> Result<StoryPage> {
-        self.repo.list_stories(cursor, limit).await
+    async fn list(&self, page_params: PageParams) -> Result<StoryPage> {
+        self.repo.list_stories(page_params).await
     }
 
     /// Create a new story

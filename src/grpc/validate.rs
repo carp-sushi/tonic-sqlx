@@ -1,12 +1,13 @@
 use crate::{
     Error, Result,
-    domain::{PageParams, StoryId, TaskId},
+    domain::{
+        Cursor, Limit, PAGE_CURSOR_MAX, PAGE_CURSOR_MIN, PAGE_LIMIT_MAX, PAGE_LIMIT_MIN,
+        PageParams, StoryId, TaskId,
+    },
 };
 use uuid::Uuid;
 
 const MAX_STR_LEN: usize = 1000;
-const MIN_PAGE_LIMIT: i64 = 10;
-const MAX_PAGE_LIMIT: i64 = 100;
 
 /// Validates name length (0 < name.len() < 1000).
 pub(crate) fn validate_name<S: Into<String>>(name: S) -> Result<String> {
@@ -46,10 +47,10 @@ fn validate_uuid(value: &str) -> Result<Uuid> {
 }
 
 /// Ensure a paging params are within reasonable bounds.
-pub(crate) fn clamp_page_bounds(cursor: i64, limit: i64) -> PageParams {
-    let cursor = cursor.clamp(1, i64::MAX);
-    let limit = limit.clamp(MIN_PAGE_LIMIT, MAX_PAGE_LIMIT);
-    (cursor, limit)
+pub(crate) fn clamp_page_bounds(cursor: Cursor, limit: Limit) -> PageParams {
+    let cursor = cursor.clamp(PAGE_CURSOR_MIN, PAGE_CURSOR_MAX);
+    let limit = limit.clamp(PAGE_LIMIT_MIN, PAGE_LIMIT_MAX);
+    PageParams(cursor, limit)
 }
 
 #[cfg(test)]
