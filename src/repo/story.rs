@@ -1,7 +1,7 @@
 use super::Repo;
 use crate::{
     Error, Result,
-    domain::{PageParams, Story, StoryId, StoryPage},
+    domain::{Page, PageParams, Story, StoryId},
 };
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
@@ -45,7 +45,7 @@ impl Repo {
     }
 
     /// Select a page of stories.
-    pub async fn list_stories(&self, PageParams(cursor, limit): PageParams) -> Result<StoryPage> {
+    pub async fn list_stories(&self, PageParams(cursor, limit): PageParams) -> Result<Page<Story>> {
         let query = sqlx::query_as!(
             StoryEntity,
             r#"SELECT id, name, seqno, created_at, updated_at FROM stories WHERE seqno >= $1
@@ -56,7 +56,7 @@ impl Repo {
         let entities = query.fetch_all(self.db_ref()).await?;
         let next_cursor = entities.last().map(|s| s.seqno + 1).unwrap_or_default();
         let stories = entities.into_iter().map(Story::from).collect();
-        Ok(StoryPage(next_cursor, stories))
+        Ok(Page(next_cursor, stories))
     }
 
     /// Insert a new story
@@ -128,8 +128,7 @@ mod tests {
         assert_eq!(story.name, "Books To Read");
 
         // Query stories page
-        let StoryPage(next_cursor, stories) =
-            repo.list_stories(PageParams::default()).await.unwrap();
+        let Page(next_cursor, stories) = repo.list_stories(PageParams::default()).await.unwrap();
         assert_eq!(next_cursor, 2);
         assert_eq!(stories.len(), 1);
 

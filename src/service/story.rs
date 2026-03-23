@@ -1,6 +1,6 @@
 use crate::{
     Result,
-    domain::{PageParams, Story, StoryId, StoryPage},
+    domain::{Page, PageParams, Story, StoryId},
     effect::StoryEffects,
     repo::Repo,
 };
@@ -23,7 +23,7 @@ impl StoryService {
 #[async_trait]
 impl StoryEffects for StoryService {
     /// Fetch a page of stories
-    async fn list(&self, page_params: PageParams) -> Result<StoryPage> {
+    async fn list(&self, page_params: PageParams) -> Result<Page<Story>> {
         self.repo.list_stories(page_params).await
     }
 
