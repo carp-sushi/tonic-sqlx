@@ -1,8 +1,14 @@
 mod story;
 mod task;
 
-/// Story side effects
-pub use story::StoryEffects;
+/// Story read effects
+pub use story::StoryReader;
 
-/// Task side effects
-pub use task::TaskEffects;
+/// Story write effects
+pub use story::StoryWriter;
+
+/// Task read effects
+pub use task::TaskReader;
+
+/// Task write effects
+pub use task::TaskWriter;

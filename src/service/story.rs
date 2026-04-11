@@ -1,7 +1,7 @@
 use crate::{
     Result,
     domain::{Page, PageParams, Story, StoryId},
-    effect::StoryEffects,
+    effect::{StoryReader, StoryWriter},
     repo::Repo,
 };
 use async_trait::async_trait;
@@ -21,18 +21,18 @@ impl StoryService {
 }
 
 #[async_trait]
-impl StoryEffects for StoryService {
-    /// Fetch a page of stories
+impl StoryReader for StoryService {
     async fn list(&self, page_params: PageParams) -> Result<Page<Story>> {
         self.repo.list_stories(page_params).await
     }
+}
 
-    /// Create a new story
+#[async_trait]
+impl StoryWriter for StoryService {
     async fn create(&self, name: String) -> Result<Story> {
         self.repo.create_story(name).await
     }
 
-    /// Update an existing story
     async fn update(&self, story_id: StoryId, name: String) -> Result<Story> {
         self.repo
             .fetch_story(&story_id)
@@ -48,7 +48,6 @@ impl StoryEffects for StoryService {
             .await
     }
 
-    /// Delete an existing story
     async fn delete(&self, story_id: StoryId) -> Result<()> {
         self.repo
             .fetch_story(&story_id)

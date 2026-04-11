@@ -1,6 +1,6 @@
 use crate::{
     domain::{Page, Status},
-    effect::{StoryEffects, TaskEffects},
+    effect::{StoryReader, StoryWriter, TaskReader, TaskWriter},
     proto::gsdx_service_server::GsdxService,
     proto::{
         CreateStoryRequest, CreateStoryResponse, CreateTaskRequest, CreateTaskResponse,
@@ -27,7 +27,7 @@ pub struct Gsdx<S, T> {
     tasks: T,
 }
 
-impl<S: StoryEffects, T: TaskEffects> Gsdx<S, T> {
+impl<S: StoryReader + StoryWriter, T: TaskReader + TaskWriter> Gsdx<S, T> {
     /// Constructor
     pub fn new(stories: S, tasks: T) -> Self {
         Self { stories, tasks }
@@ -37,8 +37,8 @@ impl<S: StoryEffects, T: TaskEffects> Gsdx<S, T> {
 #[tonic::async_trait]
 impl<S, T> GsdxService for Gsdx<S, T>
 where
-    S: StoryEffects + 'static,
-    T: TaskEffects + 'static,
+    S: StoryReader + StoryWriter + 'static,
+    T: TaskReader + TaskWriter + 'static,
 {
     /// Create a new story.
     async fn create_story(
