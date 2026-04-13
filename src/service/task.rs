@@ -4,7 +4,6 @@ use crate::{
     effect::{TaskReader, TaskWriter},
     repo::Repo,
 };
-use async_trait::async_trait;
 use futures_util::TryFutureExt;
 use std::sync::Arc;
 
@@ -20,7 +19,6 @@ impl TaskService {
     }
 }
 
-#[async_trait]
 impl TaskReader for TaskService {
     async fn list(&self, story_id: StoryId) -> Result<Vec<Task>> {
         self.repo
@@ -30,7 +28,6 @@ impl TaskReader for TaskService {
     }
 }
 
-#[async_trait]
 impl TaskWriter for TaskService {
     async fn create(&self, story_id: StoryId, name: String, status: Status) -> Result<Task> {
         self.repo.create_task(&story_id, name, status).await

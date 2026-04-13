@@ -38,7 +38,7 @@ impl Repo {
             story_id
         );
         query
-            .fetch_optional(self.db_ref())
+            .fetch_optional(&self.db)
             .await?
             .map(Story::from)
             .ok_or_else(|| Error::not_found(format!("story not found: {story_id}")))
@@ -53,7 +53,7 @@ impl Repo {
             cursor,
             limit,
         );
-        let entities = query.fetch_all(self.db_ref()).await?;
+        let entities = query.fetch_all(&self.db).await?;
         let next_cursor = entities.last().map(|s| s.seqno + 1).unwrap_or_default();
         let stories = entities.into_iter().map(Story::from).collect();
         Ok(Page(next_cursor, stories))
@@ -67,7 +67,7 @@ impl Repo {
             RETURNING id, name, seqno, created_at, updated_at"#,
             name.into()
         );
-        let entity = query.fetch_one(self.db_ref()).await?;
+        let entity = query.fetch_one(&self.db).await?;
         Ok(Story::from(entity))
     }
 
@@ -84,7 +84,7 @@ impl Repo {
             name.into(),
             story_id
         );
-        let entity = query.fetch_one(self.db_ref()).await?;
+        let entity = query.fetch_one(&self.db).await?;
         Ok(Story::from(entity))
     }
 

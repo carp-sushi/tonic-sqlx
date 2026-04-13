@@ -45,7 +45,7 @@ impl Repo {
             task_id,
         );
         query
-            .fetch_optional(self.db_ref())
+            .fetch_optional(&self.db)
             .await?
             .map(Task::from)
             .ok_or_else(|| Error::not_found(format!("task not found: {task_id}")))
@@ -60,7 +60,7 @@ impl Repo {
             story_id,
             MAX_TASKS,
         );
-        let entities = query.fetch_all(self.db_ref()).await?;
+        let entities = query.fetch_all(&self.db).await?;
         Ok(entities.into_iter().map(Task::from).collect())
     }
 
@@ -79,7 +79,7 @@ impl Repo {
             name.into(),
             status.to_string(),
         );
-        let entity = query.fetch_one(self.db_ref()).await?;
+        let entity = query.fetch_one(&self.db).await?;
         Ok(Task::from(entity))
     }
 
@@ -98,14 +98,14 @@ impl Repo {
             status.to_string(),
             task_id,
         );
-        let entity = query.fetch_one(self.db_ref()).await?;
+        let entity = query.fetch_one(&self.db).await?;
         Ok(Task::from(entity))
     }
 
     /// Delete a task.
     pub async fn delete_task(&self, &TaskId(task_id): &TaskId) -> Result<()> {
         sqlx::query!("DELETE FROM tasks WHERE id = $1", task_id)
-            .execute(self.db_ref())
+            .execute(&self.db)
             .await?;
         Ok(())
     }

@@ -4,7 +4,6 @@ use crate::{
     effect::{StoryReader, StoryWriter},
     repo::Repo,
 };
-use async_trait::async_trait;
 use futures_util::TryFutureExt;
 use std::sync::Arc;
 
@@ -20,14 +19,12 @@ impl StoryService {
     }
 }
 
-#[async_trait]
 impl StoryReader for StoryService {
     async fn list(&self, page_params: PageParams) -> Result<Page<Story>> {
         self.repo.list_stories(page_params).await
     }
 }
 
-#[async_trait]
 impl StoryWriter for StoryService {
     async fn create(&self, name: String) -> Result<Story> {
         self.repo.create_story(name).await

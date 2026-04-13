@@ -2,24 +2,32 @@ use crate::{
     Result,
     domain::{Status, StoryId, Task, TaskId},
 };
-use async_trait::async_trait;
+use std::future::Future;
 
 /// Abstract type for read-only effects that can be performed on tasks.
-#[async_trait]
 pub trait TaskReader: Send + Sync {
     /// Fetch all tasks for a story
-    async fn list(&self, story_id: StoryId) -> Result<Vec<Task>>;
+    fn list(&self, story_id: StoryId) -> impl Future<Output = Result<Vec<Task>>> + Send;
 }
 
 /// Abstract type for write effects that can be performed on tasks.
-#[async_trait]
 pub trait TaskWriter: Send + Sync {
     /// Create a new task
-    async fn create(&self, story_id: StoryId, name: String, status: Status) -> Result<Task>;
+    fn create(
+        &self,
+        story_id: StoryId,
+        name: String,
+        status: Status,
+    ) -> impl Future<Output = Result<Task>> + Send;
 
     /// Update an existing task
-    async fn update(&self, task_id: TaskId, name: Option<String>, status: Status) -> Result<Task>;
+    fn update(
+        &self,
+        task_id: TaskId,
+        name: Option<String>,
+        status: Status,
+    ) -> impl Future<Output = Result<Task>> + Send;
 
     /// Delete an existing task.
-    async fn delete(&self, task_id: TaskId) -> Result<()>;
+    fn delete(&self, task_id: TaskId) -> impl Future<Output = Result<()>> + Send;
 }

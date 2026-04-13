@@ -2,24 +2,22 @@ use crate::{
     Result,
     domain::{Page, PageParams, Story, StoryId},
 };
-use async_trait::async_trait;
+use std::future::Future;
 
 /// Abstract type for read-only effects that can be performed on stories.
-#[async_trait]
 pub trait StoryReader: Send + Sync {
     /// Fetch a page of stories
-    async fn list(&self, page_params: PageParams) -> Result<Page<Story>>;
+    fn list(&self, page_params: PageParams) -> impl Future<Output = Result<Page<Story>>> + Send;
 }
 
 /// Abstract type for write effects that can be performed on stories.
-#[async_trait]
 pub trait StoryWriter: Send + Sync {
     /// Create a new story
-    async fn create(&self, name: String) -> Result<Story>;
+    fn create(&self, name: String) -> impl Future<Output = Result<Story>> + Send;
 
     /// Update an existing story
-    async fn update(&self, story_id: StoryId, name: String) -> Result<Story>;
+    fn update(&self, story_id: StoryId, name: String) -> impl Future<Output = Result<Story>> + Send;
 
     /// Delete an existing story
-    async fn delete(&self, story_id: StoryId) -> Result<()>;
+    fn delete(&self, story_id: StoryId) -> impl Future<Output = Result<()>> + Send;
 }

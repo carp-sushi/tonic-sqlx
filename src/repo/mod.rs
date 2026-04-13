@@ -15,10 +15,6 @@ impl Repo {
         Self { db }
     }
 
-    /// Get a ref to the connection pool.
-    fn db_ref(&self) -> &PgPool {
-        &self.db
-    }
 }
 
 impl From<sqlx::Error> for Error {
@@ -45,7 +41,7 @@ mod tests {
 
     /// Given a running Postgres container, set up a connection pool and run migrations.
     pub async fn setup_pg_pool(container: &Container<Postgres>) -> PgPool {
-        let connection_string = &format!(
+        let connection_string = format!(
             "postgres://postgres:postgres@localhost:{}/postgres",
             container.get_host_port_ipv4(5432).await.unwrap(),
         );

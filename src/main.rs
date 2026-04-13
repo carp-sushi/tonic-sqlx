@@ -9,7 +9,7 @@ use sqlx::migrate::Migrator;
 use std::error::Error;
 
 // Embed migrations into the GSDX binary.
-pub static MIGRATOR: Migrator = sqlx::migrate!();
+static MIGRATOR: Migrator = sqlx::migrate!();
 
 /// GSDX command line interface parser.
 #[derive(Parser)]

@@ -36,10 +36,9 @@ impl From<Story> for StoryData {
 /// Map domain status to gRPC task status
 impl From<Status> for TaskStatus {
     fn from(status: Status) -> Self {
-        if status == Status::Complete {
-            TaskStatus::Complete
-        } else {
-            TaskStatus::Incomplete
+        match status {
+            Status::Complete => TaskStatus::Complete,
+            Status::Incomplete => TaskStatus::Incomplete,
         }
     }
 }
@@ -47,10 +46,9 @@ impl From<Status> for TaskStatus {
 /// Map gRPC task status to domain status
 impl From<TaskStatus> for Status {
     fn from(status: TaskStatus) -> Self {
-        if status == TaskStatus::Complete {
-            Status::Complete
-        } else {
-            Status::Incomplete
+        match status {
+            TaskStatus::Complete => Status::Complete,
+            TaskStatus::Incomplete | TaskStatus::Unspecified => Status::Incomplete,
         }
     }
 }
@@ -74,6 +72,6 @@ impl From<Task> for TaskData {
 fn to_timestamp(dt: DateTime<Utc>) -> Option<Timestamp> {
     Some(Timestamp {
         seconds: dt.timestamp(),
-        nanos: dt.timestamp_subsec_nanos() as i32,
+        nanos: dt.timestamp_subsec_nanos().try_into().expect("subsec nanos fits in i32"),
     })
 }

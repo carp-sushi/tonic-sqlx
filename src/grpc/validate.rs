@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn validate_uuid_success() {
-        let input = format!(" {} ", Uuid::new_v4().to_string());
+        let input = format!(" {} ", Uuid::new_v4());
         let result = validate_uuid(&input).unwrap();
         assert_eq!(result.to_string(), input.trim());
     }

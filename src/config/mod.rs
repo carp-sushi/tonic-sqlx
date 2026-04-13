@@ -21,12 +21,10 @@ impl Config {
             .expect("grpc_listen_addr could not be parsed");
 
         // database settings
-        let mut db_max_connections = num_cpus::get() as u32;
-        if let Ok(s) = env::var("DATABASE_MAX_CONNECTIONS") {
-            db_max_connections = s
-                .parse()
-                .expect("DATABASE_MAX_CONNECTIONS could not be parsed")
-        }
+        let db_max_connections = env::var("DATABASE_MAX_CONNECTIONS")
+            .ok()
+            .map(|s| s.parse().expect("DATABASE_MAX_CONNECTIONS could not be parsed"))
+            .unwrap_or_else(|| num_cpus::get() as u32);
         let db_url = env::var("DATABASE_URL").expect("DATABASE_URL not set");
         let db_schema = env::var("DATABASE_SCHEMA").unwrap_or_else(|_| "public".into());
 
